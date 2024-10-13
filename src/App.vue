@@ -19,3 +19,9 @@ export default defineComponent({
   },
 });
 </script>
+
+<style>
+* {
+  font-family: "Noto Sans KR", sans-serif !important;
+}
+</style>

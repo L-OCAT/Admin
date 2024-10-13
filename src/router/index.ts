@@ -1,26 +1,57 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
-import HomeView from "../views/HomeView.vue";
+import LoginView from "@/components/AdminLoginView.vue";
+import DashboardView from "@/components/DashboardView.vue";
+import NotFoundView from "@/components/common/NotFoundView.vue";
+import { getProperty } from "@/utils/environment";
+import { isAuthenticated } from "@/utils/jwt-parser";
+
+const DEFAULT_TITLE = getProperty("APP_NAME");
+const DEFUALT_URL = getProperty("BASE_URL");
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
-    name: "home",
-    component: HomeView,
+    name: "Login",
+    component: LoginView,
+    meta: { requiresAuth: false },
   },
   {
-    path: "/about",
-    name: "about",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () =>
-      import(/* webpackChunkName: "about" */ "../views/AboutView.vue"),
+    path: "/dashboard",
+    name: "Dashboard",
+    component: DashboardView,
+  },
+  {
+    path: "/:pathMatch(.*)*",
+    component: NotFoundView,
+    meta: { title: "Not Found!", requiresAuth: false },
   },
 ];
 
 const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
+  history: createWebHistory(DEFUALT_URL),
   routes,
+  scrollBehavior(to, from, savedPosition) {
+    return savedPosition || { top: 0 };
+  },
+});
+
+router.beforeEach((to, from, next) => {
+  document.title = (to.meta.title as string) || DEFAULT_TITLE;
+
+  const requiresAuth = to.matched.some(
+    (record) => record.meta.requiresAuth !== false
+  );
+
+  if (requiresAuth && !isAuthenticated()) {
+    alert("인증이 필요한 페이지입니다.");
+    return next({ name: "Login" });
+  }
+
+  if (to.name === "Login" && isAuthenticated()) {
+    return next({ name: "Dashboard" });
+  }
+
+  next();
 });
 
 export default router;
