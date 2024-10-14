@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
-import LoginView from "@/components/AdminLoginView.vue";
 import DashboardView from "@/components/DashboardView.vue";
 import NotFoundView from "@/components/common/NotFoundView.vue";
+import AdminLoginView from "@/components/AdminLoginView.vue";
 import { getProperty } from "@/utils/environment";
 import { isAuthenticated } from "@/utils/jwt-parser";
 
@@ -12,7 +12,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
     name: "Login",
-    component: LoginView,
+    component: AdminLoginView,
     meta: { requiresAuth: false },
   },
   {

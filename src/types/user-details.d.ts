@@ -1,5 +1,6 @@
 export interface AdminUserDetails {
-  readonly id: string;
+  readonly sub: string;
+  readonly name: string;
   readonly auth: Authority[];
 }
 
