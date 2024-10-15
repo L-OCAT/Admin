@@ -12,3 +12,8 @@ export const isAuthenticated = (): boolean => {
   }
   return !!parseJwt(accessToken);
 };
+
+export const invalidateToken = (): void => {
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+};

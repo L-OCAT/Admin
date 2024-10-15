@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
-import DashboardView from "@/components/DashboardView.vue";
 import NotFoundView from "@/components/common/NotFoundView.vue";
 import AdminLoginView from "@/components/AdminLoginView.vue";
 import { getProperty } from "@/utils/environment";
-import { isAuthenticated } from "@/utils/jwt-parser";
+import MainView from "@/components/MainView.vue";
+import { isAuthenticated } from "@/utils/token-utils";
 
 const DEFAULT_TITLE = getProperty("APP_NAME");
 const DEFUALT_URL = getProperty("BASE_URL");
@@ -18,7 +18,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/dashboard",
     name: "Dashboard",
-    component: DashboardView,
+    component: MainView,
   },
   {
     path: "/:pathMatch(.*)*",
