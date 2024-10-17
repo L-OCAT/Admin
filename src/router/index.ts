@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import NotFoundView from "@/components/common/NotFoundView.vue";
-import AdminLoginView from "@/components/AdminLoginView.vue";
 import { getProperty } from "@/utils/environment";
 import MainView from "@/components/MainView.vue";
 import { isAuthenticated } from "@/utils/token-utils";
+import IndexView from "@/components/login/IndexView.vue";
 
 const DEFAULT_TITLE = getProperty("APP_NAME");
 const DEFUALT_URL = getProperty("BASE_URL");
@@ -12,7 +12,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
     name: "Login",
-    component: AdminLoginView,
+    component: IndexView,
     meta: { requiresAuth: false },
   },
   {
