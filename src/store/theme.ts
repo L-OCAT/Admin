@@ -19,7 +19,7 @@ export const useAppTheme = defineStore("theme", () => {
   };
 
   const save = () => {
-    localStorage.setItem(APP_THEME_KEY, isDarkMode.value ? "true" : "false");
+    localStorage.setItem(APP_THEME_KEY, isDarkMode.value.toString());
   };
 
   const apply = () => {
