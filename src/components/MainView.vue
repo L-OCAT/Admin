@@ -101,15 +101,27 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, onUnmounted, ref } from "vue";
+import {
+  computed,
+  defineAsyncComponent,
+  defineComponent,
+  onMounted,
+  onUnmounted,
+  ref,
+} from "vue";
 import { invalidateToken, parseJwt } from "@/utils/token-utils";
 import { useAppTheme } from "@/store/theme";
 
 export default defineComponent({
   name: "MainView",
+  components: {
+    UserManageView: defineAsyncComponent(
+      () => import("@/components/user/UserManageView.vue")
+    ),
+  },
   setup() {
     const appTheme = useAppTheme();
-    const currentView = ref("MainView");
+    const currentView = ref("UserManageView");
     const username = ref("");
     const userRole = ref("");
     const currentTime = ref("");
@@ -127,8 +139,8 @@ export default defineComponent({
     });
 
     const menuItems = [
-      { title: "홈", icon: "mdi-home", view: "MainView" },
-      { title: "사용자 관리", icon: "mdi-account", view: "UserManagementView" },
+      { title: "홈", icon: "mdi-home", view: "UserManageView" },
+      { title: "사용자 관리", icon: "mdi-account", view: "UserManageView" },
       { title: "게시글 관리", icon: "mdi-post", view: "PostManagementView" },
     ];
 
@@ -151,7 +163,7 @@ export default defineComponent({
     });
     return {
       isDarkMode: computed(() => appTheme.isDarkMode),
-      toggleDarkMode: appTheme.toggle(),
+      toggleDarkMode: () => appTheme.toggle(),
       currentView,
       username,
       currentTime,
