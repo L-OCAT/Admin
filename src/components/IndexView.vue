@@ -3,23 +3,27 @@
     class="d-flex flex-column align-center justify-center"
     fill-height
   >
-    <v-card class="pa-6" elevation="2">
-      <component :is="currentView"></component>
-    </v-card>
+    <component :is="currentView"></component>
   </v-container>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch } from "vue";
+import { defineAsyncComponent, defineComponent, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useAuth } from "@/store/auth";
 
 export default defineComponent({
   name: "IndexView",
   components: {
-    LoginView: () => import("@/components/login/LoginView.vue"),
-    PasswordResetView: () => import("@/components/login/PasswordResetView.vue"),
-    MfaView: () => import("@/components/login/MfaView.vue"),
+    LoginView: defineAsyncComponent(
+      () => import("@/components/login/LoginView.vue")
+    ),
+    PasswordResetView: defineAsyncComponent(
+      () => import("@/components/login/PasswordResetView.vue")
+    ),
+    MfaView: defineAsyncComponent(
+      () => import("@/components/login/MfaView.vue")
+    ),
   },
   setup() {
     const router = useRouter();

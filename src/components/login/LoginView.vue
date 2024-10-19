@@ -1,18 +1,20 @@
 <template>
-  <v-card v-if="!isPasswordExpired && !needMFA" class="pa-6" elevation="2">
+  <v-card class="pa-6" elevation="2">
     <h1 class="text-center mb-6" style="font-weight: bold; font-size: 24px">
       LOCAT Admin Console
     </h1>
-    <v-form>
+    <v-form @submit.prevent="login">
       <v-text-field
+        class="mb-4"
         v-model="userId"
         label="Admin ID"
         outlined
         dense
-        class="mb-4"
         prepend-inner-icon="mdi-account"
+        @keyup.enter="login"
       ></v-text-field>
       <v-text-field
+        class="mb-4"
         v-model="password"
         label="Password"
         :type="showPassword ? 'text' : 'password'"
@@ -21,7 +23,7 @@
         prepend-inner-icon="mdi-lock"
         :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
         @click:append-inner="togglePasswordVisibility"
-        class="mb-4"
+        @keyup.enter="login"
       ></v-text-field>
       <v-alert type="error" v-if="errorMessage" dense text="">
         {{ errorMessage }}
@@ -62,6 +64,10 @@ export default defineComponent({
     const password = ref("");
     const loginErrorMessage = ref("");
     const login = async () => {
+      if (!userId.value || !password.value) {
+        loginErrorMessage.value = "아이디와 비밀번호를 입력해주세요.";
+        return;
+      }
       try {
         const response = await request<LoginResponse>("/v1/auth/admin/token", {
           method: "POST",
@@ -109,3 +115,41 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.v-container {
+  min-height: 100vh;
+}
+
+.v-card {
+  min-width: 500px;
+  border-radius: 12px;
+  background-color: #fff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  color: #424242;
+}
+
+.v-text-field .v-label {
+  color: #757575;
+}
+
+.v-btn {
+  border-radius: 8px;
+  box-shadow: none;
+  background-color: #ff5f2c;
+  color: #fff;
+}
+
+.v-card h1 {
+  color: #ff5f2c;
+}
+
+.timer-text {
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #ff0000;
+}
+</style>

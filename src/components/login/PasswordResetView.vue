@@ -1,5 +1,5 @@
 <template>
-  <v-card v-if="isPasswordExpired" class="pa-6" elevation="2">
+  <v-card class="pa-6" elevation="2">
     <h1 class="text-center mb-6" style="font-weight: bold; font-size: 24px">
       비밀번호 재설정
     </h1>
@@ -75,7 +75,7 @@ export default defineComponent({
       request<{ success: boolean }>("/v1/admin/reset-password", {
         method: "POST",
         body: JSON.stringify({
-          userId: auth.userId.value,
+          userId: auth.userId,
           newPassword: newPassword.value,
         }),
         headers: {
@@ -105,3 +105,41 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.v-container {
+  min-height: 100vh;
+}
+
+.v-card {
+  min-width: 500px;
+  border-radius: 12px;
+  background-color: #fff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  color: #424242;
+}
+
+.v-text-field .v-label {
+  color: #757575;
+}
+
+.v-btn {
+  border-radius: 8px;
+  box-shadow: none;
+  background-color: #ff5f2c;
+  color: #fff;
+}
+
+.v-card h1 {
+  color: #ff5f2c;
+}
+
+.timer-text {
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #ff0000;
+}
+</style>
