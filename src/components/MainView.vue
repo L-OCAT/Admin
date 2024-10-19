@@ -101,21 +101,21 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, onUnmounted, ref } from "vue";
-import { parseJwt } from "@/utils/token-utils";
-import { useTheme } from "vuetify";
+import { computed, defineComponent, onMounted, onUnmounted, ref } from "vue";
+import { invalidateToken, parseJwt } from "@/utils/token-utils";
+import { useAppTheme } from "@/store/theme";
 
 export default defineComponent({
   name: "MainView",
   setup() {
-    const theme = useTheme();
-    const isDarkMode = ref();
-    const currentView = ref("HomeView");
+    const appTheme = useAppTheme();
+    const currentView = ref("MainView");
     const username = ref("");
     const userRole = ref("");
     const currentTime = ref("");
 
     onMounted(() => {
+      appTheme.init();
       updateTime();
       timer = setInterval(updateTime, 1000);
       const accessToken = localStorage.getItem("accessToken");
@@ -124,21 +124,13 @@ export default defineComponent({
         username.value = `${userDetails.name}(${userDetails.sub})`;
         userRole.value = userDetails.auth[0].authority;
       }
-      isDarkMode.value = window.matchMedia(
-        "(prefers-color-scheme: dark)"
-      ).matches; // TODO: 다크모드 관련 Local Storage 처리
     });
 
     const menuItems = [
-      { title: "홈", icon: "mdi-home", view: "HomeView" },
+      { title: "홈", icon: "mdi-home", view: "MainView" },
       { title: "사용자 관리", icon: "mdi-account", view: "UserManagementView" },
       { title: "게시글 관리", icon: "mdi-post", view: "PostManagementView" },
     ];
-
-    const toggleDarkMode = () => {
-      isDarkMode.value = !isDarkMode.value;
-      theme.global.name.value = isDarkMode.value ? "dark" : "light";
-    };
 
     const updateTime = () => {
       const now = new Date();
@@ -150,14 +142,16 @@ export default defineComponent({
     const logout = () => {
       // 로그아웃 로직 구현
       console.log("로그아웃");
+      invalidateToken();
+      document.location.href = "/";
     };
 
     onUnmounted(() => {
       clearInterval(timer);
     });
     return {
-      isDarkMode,
-      toggleDarkMode,
+      isDarkMode: computed(() => appTheme.isDarkMode),
+      toggleDarkMode: appTheme.toggle(),
       currentView,
       username,
       currentTime,

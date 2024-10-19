@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { isTokenValid } from "@/utils/token-utils";
 
 export const useAuth = defineStore("auth", {
   state: () => ({
@@ -9,7 +10,7 @@ export const useAuth = defineStore("auth", {
   }),
   actions: {
     isAuthenticated() {
-      return this.isLoggedIn && !this.isPasswordExpired && !this.needMFA;
+      return this.isLoggedIn && isTokenValid() && !this.isPasswordExpired;
     },
     setIsLoggedIn(isLoggedIn: boolean) {
       this.isLoggedIn = isLoggedIn;

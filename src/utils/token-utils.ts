@@ -5,7 +5,7 @@ export const parseJwt = (token: string): AdminUserDetails => {
   return jwtDecode<AdminUserDetails>(token);
 };
 
-export const isAuthenticated = (): boolean => {
+export const isTokenValid = (): boolean => {
   const accessToken = localStorage.getItem("accessToken");
   if (!accessToken) {
     return false;
