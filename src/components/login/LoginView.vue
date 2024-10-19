@@ -39,7 +39,7 @@
 import { defineComponent, onMounted, ref } from "vue";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
 import { request } from "@/utils/request-client";
-import { LoginResponse } from "@/types/login-response";
+import { LoginResponse } from "@/types/admin/login-response";
 import { useAuth } from "@/store/auth";
 
 export default defineComponent({

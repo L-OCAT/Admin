@@ -75,7 +75,7 @@
               <v-btn
                 text=""
                 v-bind="props"
-                style="color: #ff5f2c; font-weight: bold"
+                style="color: #ff5f2c; font-weight: bold; text-transform: none"
               >
                 {{ username }}
                 <v-icon>mdi-chevron-down</v-icon>
@@ -118,6 +118,9 @@ export default defineComponent({
     UserManageView: defineAsyncComponent(
       () => import("@/components/user/UserManageView.vue")
     ),
+    ServerManageView: defineAsyncComponent(
+      () => import("@/components/server/ServerManageView.vue")
+    ),
   },
   setup() {
     const appTheme = useAppTheme();
@@ -139,9 +142,13 @@ export default defineComponent({
     });
 
     const menuItems = [
-      { title: "홈", icon: "mdi-home", view: "UserManageView" },
+      { title: "대시보드", icon: "mdi-view-dashboard", view: "UserManageView" },
       { title: "사용자 관리", icon: "mdi-account", view: "UserManageView" },
-      { title: "게시글 관리", icon: "mdi-post", view: "PostManagementView" },
+      {
+        title: "서버 상태 관리",
+        icon: "mdi-heart-pulse",
+        view: "ServerManageView",
+      },
     ];
 
     const updateTime = () => {

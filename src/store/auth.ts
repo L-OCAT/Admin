@@ -3,7 +3,7 @@ import { isTokenValid } from "@/utils/token-utils";
 
 export const useAuth = defineStore("auth", {
   state: () => ({
-    isLoggedIn: false,
+    isLoggedIn: true,
     isPasswordExpired: false,
     needMFA: false,
     userId: "",

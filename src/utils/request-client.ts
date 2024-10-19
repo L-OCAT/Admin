@@ -1,4 +1,4 @@
-import { BaseResponse } from "@/types/response";
+import { BaseResponse } from "@/types/common/response";
 import { getProperty } from "@/utils/environment";
 
 const API_URL = getProperty("API_URL");

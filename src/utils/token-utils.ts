@@ -1,4 +1,4 @@
-import { AdminUserDetails } from "@/types/user-details";
+import { AdminUserDetails } from "@/types/admin/user-details";
 import { jwtDecode } from "jwt-decode";
 
 export const parseJwt = (token: string): AdminUserDetails => {
