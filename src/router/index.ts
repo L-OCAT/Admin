@@ -1,24 +1,22 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
-import LoginView from "@/components/AdminLoginView.vue";
-import DashboardView from "@/components/DashboardView.vue";
 import NotFoundView from "@/components/common/NotFoundView.vue";
+import MainView from "@/components/MainView.vue";
+import IndexView from "@/components/IndexView.vue";
 import { getProperty } from "@/utils/environment";
-import { isAuthenticated } from "@/utils/jwt-parser";
 
-const DEFAULT_TITLE = getProperty("APP_NAME");
-const DEFUALT_URL = getProperty("BASE_URL");
+export const BASE_URL = getProperty("BASE_URL");
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
-    name: "Login",
-    component: LoginView,
+    name: "IndexView",
+    component: IndexView,
     meta: { requiresAuth: false },
   },
   {
     path: "/dashboard",
-    name: "Dashboard",
-    component: DashboardView,
+    name: "MainView",
+    component: MainView,
   },
   {
     path: "/:pathMatch(.*)*",
@@ -28,30 +26,11 @@ const routes: Array<RouteRecordRaw> = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(DEFUALT_URL),
+  history: createWebHistory(BASE_URL),
   routes,
   scrollBehavior(to, from, savedPosition) {
     return savedPosition || { top: 0 };
   },
-});
-
-router.beforeEach((to, from, next) => {
-  document.title = (to.meta.title as string) || DEFAULT_TITLE;
-
-  const requiresAuth = to.matched.some(
-    (record) => record.meta.requiresAuth !== false
-  );
-
-  if (requiresAuth && !isAuthenticated()) {
-    alert("인증이 필요한 페이지입니다.");
-    return next({ name: "Login" });
-  }
-
-  if (to.name === "Login" && isAuthenticated()) {
-    return next({ name: "Dashboard" });
-  }
-
-  next();
 });
 
 export default router;

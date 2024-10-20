@@ -1,0 +1,120 @@
+<template>
+  <v-container>
+    <v-card>
+      <v-card-title class="d-flex align-center pa-4">
+        <span class="text-h5 font-weight-bold">서버 상태 대시보드</span>
+        <v-chip
+          v-if="health"
+          :color="getStatusColor(health.status)"
+          text-color="white"
+          label
+          class="ml-4"
+        >
+          전체 상태: {{ health.status }}
+        </v-chip>
+      </v-card-title>
+      <v-card-text>
+        <v-row v-if="health">
+          <v-col cols="12" sm="6" md="4">
+            <health-component-card name="Server" :component="serverHealth" />
+          </v-col>
+          <template v-if="health.components">
+            <v-col v-if="health.components.db" cols="12" sm="6" md="4">
+              <health-component-card
+                name="Database"
+                :component="health.components.db"
+              />
+            </v-col>
+            <v-col v-if="health.components.redis" cols="12" sm="6" md="4">
+              <health-component-card
+                name="Redis"
+                :component="health.components.redis"
+              />
+            </v-col>
+          </template>
+        </v-row>
+        <v-row v-else>
+          <v-col cols="12" class="text-center">
+            <v-progress-circular
+              indeterminate
+              color="primary"
+            ></v-progress-circular>
+            <div>서버 상태를 불러오는 중...</div>
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
+  </v-container>
+</template>
+
+<script lang="ts">
+import { defineComponent, onMounted, ref, computed } from "vue";
+import { IHealth, IServerHealth } from "@/types/server/server-metric";
+import { requestActuator } from "@/utils/request-client";
+import HealthComponentCard from "./HealthComponentCard.vue";
+
+export default defineComponent({
+  name: "ServerManageView",
+  components: {
+    HealthComponentCard,
+  },
+  setup() {
+    const health = ref<IHealth | null>(null);
+
+    const fetchHealthInfo = async () => {
+      try {
+        health.value = await requestActuator<IHealth>("/actuator/health");
+      } catch (error) {
+        console.error("서버 상태 정보를 불러오는데 실패했습니다:", error);
+      }
+    };
+
+    const getStatusColor = (status: string): string => {
+      switch (status) {
+        case "UP":
+          return "green";
+        case "DOWN":
+          return "red";
+        case "OUT_OF_SERVICE":
+          return "orange";
+        case "UNKNOWN":
+        default:
+          return "grey";
+      }
+    };
+
+    const serverHealth = computed<IServerHealth>(() => ({
+      status: health.value?.status || "UNKNOWN",
+      details: {
+        diskSpace: {
+          total: 0,
+          free: 0,
+          threshold: 0,
+          path: "",
+          exists: false,
+        },
+      },
+    }));
+
+    onMounted(() => {
+      fetchHealthInfo();
+    });
+
+    return {
+      health,
+      getStatusColor,
+      serverHealth,
+    };
+  },
+});
+</script>
+
+<style scoped>
+.v-card {
+  transition: all 0.3s;
+}
+.v-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+</style>

@@ -8,7 +8,7 @@
       <p>올바른 주소인지 확인해주세요.</p>
       <p class="mt-4 redirect-message">
         <strong>{{ countdown }}</strong
-        >초 뒤에 초기 화면으로 돌아갑니다.
+        >초 뒤에 이전 페이지로 돌아갑니다.
       </p>
     </v-card>
   </v-container>

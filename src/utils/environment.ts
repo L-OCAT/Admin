@@ -1,4 +1,4 @@
-import { IEnvironment } from "@/types/environment";
+import { IEnvironment } from "@/types/common/environment";
 
 const VUE_ENV_PREFIX = "VUE_APP_";
 
