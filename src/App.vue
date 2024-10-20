@@ -11,14 +11,18 @@ import { defineComponent } from "vue";
 import { useAuth } from "@/store/auth";
 import { useRouter } from "vue-router";
 import { getProperty } from "@/utils/environment";
+import { initKakao } from "kakao-js-sdk";
 
 export const APP_NAME = getProperty("APP_NAME");
 export const APP_VERSION = getProperty("APP_VERSION");
 export const BUILD_DATE = getProperty("APP_BUILD_DATE");
 
+export const KAKAO_KEY = getProperty("KAKAO_KEY");
+
 export default defineComponent({
   name: "App",
   setup() {
+    initKakao(KAKAO_KEY);
     const router = useRouter();
     const auth = useAuth();
 

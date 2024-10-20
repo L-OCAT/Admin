@@ -83,8 +83,9 @@ export default defineComponent({
         },
       })
         .then((response) => {
-          if (response.data) {
+          if (response) {
             alert("비밀번호가 성공적으로 재설정되었습니다.");
+            auth.resolvePasswordExpired();
           }
         })
         .catch(() => {

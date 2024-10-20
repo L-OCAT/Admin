@@ -18,6 +18,9 @@ export default defineComponent({
     LoginView: defineAsyncComponent(
       () => import("@/components/login/LoginView.vue")
     ),
+    SocialLoginView: defineAsyncComponent(
+      () => import("@/components/login/SocialLoginView.vue")
+    ),
     PasswordResetView: defineAsyncComponent(
       () => import("@/components/login/PasswordResetView.vue")
     ),
@@ -40,9 +43,19 @@ export default defineComponent({
     );
 
     watch(
+      () => auth.isLoggedIn,
+      () => {
+        if (auth.isAuthenticated()) {
+          router.push({ name: "MainView" });
+        }
+      }
+    );
+
+    watch(
       () => auth.isPasswordExpired,
       (isPasswordExpired) => {
         if (isPasswordExpired) {
+          alert("임시 비밀번호를 사용 중입니다. 비밀번호를 변경해주세요.");
           currentView.value = "PasswordResetView";
         }
       }

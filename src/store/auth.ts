@@ -18,6 +18,9 @@ export const useAuth = defineStore("auth", {
     markPasswordAsExpired() {
       this.isPasswordExpired = true;
     },
+    resolvePasswordExpired() {
+      this.isPasswordExpired = false;
+    },
     requireMFA(isRequired: boolean) {
       this.needMFA = isRequired;
     },
