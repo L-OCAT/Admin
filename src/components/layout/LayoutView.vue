@@ -1,57 +1,41 @@
 <template>
   <v-app>
     <v-navigation-drawer app permanent width="300">
-      <div
-        style="
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 16px;
-        "
-      >
-        <v-img
-          src="@/assets/logo.svg"
-          alt="Logo"
-          style="flex: none; height: 60px; width: 60px"
-        />
-        <span
-          style="
-            text-align: center;
-            font-size: 28px;
-            font-weight: bold;
-            white-space: nowrap;
-            line-height: 50px;
-            margin-left: 15px;
-          "
-        >
-          LOCAT
-        </span>
-      </div>
-
-      <v-list dense nav>
-        <v-list-item
-          v-for="item in menuItems"
-          :key="item.title"
-          link
-          @click="currentView = item.view"
-          class="d-flex align-center"
-          style="padding: 8px 16px"
-        >
-          <v-icon size="38" class="mr-3" style="vertical-align: middle">{{
-            item.icon
-          }}</v-icon>
-          <span
-            style="
-              font-size: 1.125rem;
-              margin-left: 8px;
-              white-space: nowrap;
-              vertical-align: middle;
-            "
-          >
-            {{ item.title }}
+      <v-container class="d-flex flex-column fill-height pa-0">
+        <div class="d-flex align-center justify-center pa-4">
+          <v-img
+            src="@/assets/logo.svg"
+            alt="Logo"
+            width="60"
+            height="60"
+            class="flex-shrink-0"
+          />
+          <span class="text-h5 font-weight-bold ml-4 flex-shrink-0">
+            LOCAT
           </span>
-        </v-list-item>
-      </v-list>
+        </div>
+        <v-list dense nav class="flex-grow-1 overflow-y-auto w-100">
+          <v-list-item
+            v-for="item in menuItems"
+            :key="item.title"
+            link
+            @click="currentView = item.view"
+            class="d-flex align-center py-2 pl-4"
+          >
+            <v-icon size="38" class="mr-3">{{ item.icon }}</v-icon>
+            <span class="text-subtitle-1">
+              {{ item.title }}
+            </span>
+          </v-list-item>
+        </v-list>
+        <div class="pa-2 text-center pl-4">
+          <span class="text-caption font-weight-bold"> © Team LOCAT </span>
+          <v-spacer></v-spacer>
+          <span class="text-caption font-weight-bold">v{{ appVersion }}</span>
+          <span class="text-caption">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+          <span class="text-caption">{{ buildDate }}</span>
+        </div>
+      </v-container>
     </v-navigation-drawer>
 
     <v-app-bar app dense height="80">
@@ -111,9 +95,10 @@ import {
 } from "vue";
 import { invalidateToken, parseJwt } from "@/utils/token-utils";
 import { useAppTheme } from "@/store/theme";
+import { APP_VERSION, BUILD_DATE } from "@/App.vue";
 
 export default defineComponent({
-  name: "MainView",
+  name: "LayoutView",
   components: {
     UserManageView: defineAsyncComponent(
       () => import("@/components/user/UserManageView.vue")
@@ -121,6 +106,8 @@ export default defineComponent({
   },
   setup() {
     const appTheme = useAppTheme();
+    const appVersion = APP_VERSION;
+    const buildDate = BUILD_DATE;
     const currentView = ref("UserManageView");
     const username = ref("");
     const userRole = ref("");
@@ -162,6 +149,8 @@ export default defineComponent({
       clearInterval(timer);
     });
     return {
+      appVersion,
+      buildDate,
       isDarkMode: computed(() => appTheme.isDarkMode),
       toggleDarkMode: () => appTheme.toggle(),
       currentView,

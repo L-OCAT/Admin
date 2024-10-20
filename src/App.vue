@@ -12,7 +12,9 @@ import { useAuth } from "@/store/auth";
 import { useRouter } from "vue-router";
 import { getProperty } from "@/utils/environment";
 
-const APP_NAME = getProperty("APP_NAME");
+export const APP_NAME = getProperty("APP_NAME");
+export const APP_VERSION = getProperty("APP_VERSION");
+export const BUILD_DATE = getProperty("APP_BUILD_DATE");
 
 export default defineComponent({
   name: "App",
