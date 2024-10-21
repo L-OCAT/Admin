@@ -53,17 +53,16 @@ export default defineComponent({
       deviceId.value = (await fingerPrint.get()).visitorId;
     });
 
-    // UI State
     const showPassword = ref(false);
-    const togglePasswordVisibility = () => {
-      showPassword.value = !showPassword.value;
-    };
-
-    // Login State
     const deviceId = ref("");
     const userId = ref("");
     const password = ref("");
     const loginErrorMessage = ref("");
+
+    const togglePasswordVisibility = () => {
+      showPassword.value = !showPassword.value;
+    };
+
     const login = async () => {
       if (!userId.value || !password.value) {
         loginErrorMessage.value = "아이디와 비밀번호를 입력해주세요.";
@@ -95,7 +94,6 @@ export default defineComponent({
           if (response.data.isPasswordExpired) {
             auth.markPasswordAsExpired();
           } else {
-            alert("로그인 성공!");
             auth.setIsLoggedIn(true);
           }
         }
