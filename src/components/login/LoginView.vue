@@ -41,6 +41,7 @@ import FingerprintJS from "@fingerprintjs/fingerprintjs";
 import { request } from "@/utils/request-client";
 import { LoginResponse } from "@/types/admin/login-response";
 import { useAuth } from "@/store/auth";
+import { BaseResponse } from "@/types/common/response";
 
 export default defineComponent({
   name: "LoginView",
@@ -69,17 +70,20 @@ export default defineComponent({
         return;
       }
       try {
-        const response = await request<LoginResponse>("/v1/auth/admin/token", {
-          method: "POST",
-          body: JSON.stringify({
-            deviceId: deviceId.value,
-            userId: userId.value,
-            password: password.value,
-          }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await request<BaseResponse<LoginResponse>>(
+          "/v1/auth/admin/token",
+          {
+            method: "POST",
+            data: JSON.stringify({
+              deviceId: deviceId.value,
+              userId: userId.value,
+              password: password.value,
+            }),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         if (response.data) {
           auth.storeUserId(userId.value);

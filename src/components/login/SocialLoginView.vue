@@ -80,7 +80,7 @@ export default defineComponent({
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
+          data: JSON.stringify({
             oAuthId: oAuthId,
             nickname: "LOCAT" + Math.floor(Math.random() * 10000),
             isTermsOfServiceAgreed: true,

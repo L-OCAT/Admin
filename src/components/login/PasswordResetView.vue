@@ -74,7 +74,7 @@ export default defineComponent({
       // 비밀번호 재설정 요청
       request<{ success: boolean }>("/v1/admin/reset-password", {
         method: "POST",
-        body: JSON.stringify({
+        data: JSON.stringify({
           userId: auth.userId,
           newPassword: newPassword.value,
         }),

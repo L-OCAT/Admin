@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container v-if="showList">
     <v-card class="mb-12">
       <v-card-title class="text-h4 font-weight-bold">
         사용자 관리
@@ -60,11 +60,23 @@
     <v-data-table
       :headers="headers"
       :items="users"
-      :items-per-page="10"
+      :items-per-page="itemsPerPage"
+      :items-per-page-options="[10, 20, 30, 50]"
+      @update:items-per-page="onItemsPerPageChange"
       items-per-page-text="페이지 당 아이템 수"
+      no-data-text="사용자 정보를 찾을 수 없습니다."
       :loading="loading"
       class="elevation-1"
     >
+      <template v-slot:[`item.createdAt`]="{ item }">
+        {{ formatDate(item.createdAt) }}
+      </template>
+      <template v-slot:[`item.updatedAt`]="{ item }">
+        {{ formatDate(item.updatedAt) }}
+      </template>
+      <template v-slot:[`item.deletedAt`]="{ item }">
+        {{ item.deletedAt ? formatDate(item.deletedAt) : "-" }}
+      </template>
       <template v-slot:[`item.actions`]="{ item }">
         <v-btn small color="#ff5f2c" dark :to="`/users/${item.id}`">
           상세보기
@@ -75,12 +87,17 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed } from "vue";
+import { defineComponent, ref, computed, onMounted } from "vue";
 import { EndUser } from "@/types/user/user";
+import { formatDate } from "@/utils/date-formatter";
+import { PageResponse } from "@/types/common/response";
+import { request } from "@/utils/request-client";
 
 export default defineComponent({
   name: "UserManageView",
+  methods: { formatDate },
   setup() {
+    const showList = ref(true);
     const searchQuery = ref("");
     const dateRange = ref<string[]>([]);
     const dateMenu = ref(false);
@@ -90,46 +107,41 @@ export default defineComponent({
       { title: "번호", align: "start" as const, sortable: true, key: "id" },
       { title: "닉네임", key: "nickname" },
       { title: "이메일", key: "email" },
-      { title: "가입방식", key: "oAuthType" },
+      { title: "권한", key: "type" },
+      { title: "상태", key: "statusType" },
+      { title: "가입 방식", key: "oAuthType" },
       { title: "가입일", key: "createdAt" },
-      { title: "마지막 수정일", key: "updatedAt" },
-      { title: "상태", key: "status" },
-      { title: "액션", key: "actions", sortable: false },
+      { title: "최종 수정일", key: "updatedAt" },
+      { title: "탈퇴일", key: "deletedAt" },
+      { title: "관리", key: "actions", sortable: false },
     ];
+    const users = ref<EndUser[]>([]);
+    const error = ref<string | null>(null);
 
-    const users = ref<EndUser[]>([
-      {
-        id: 1,
-        nickname: "유저1",
-        email: "user1@example.com",
-        oAuthType: "KAKAO",
-        createdAt: "2024-09-21",
-        updatedAt: "2024-09-29",
-        status: "활성",
-      },
-      {
-        id: 2,
-        nickname: "유저2",
-        email: "user2@example.com",
-        oAuthType: "APPLE",
-        createdAt: "2024-09-25",
-        updatedAt: "2024-09-30",
-        status: "활성",
-      },
-      // ... more user data
-    ]);
+    const itemsPerPage = ref(20);
 
-    const fetchUsers = () => {
+    onMounted(() => {
+      fetchUsers();
+    });
+
+    const fetchUsers = async () => {
       loading.value = true;
-      // Simulate API call
-      console.log(`Date Picked: ${dateRange.value}`);
-      setTimeout(() => {
-        loading.value = false;
-      }, 1000);
+      request<PageResponse<EndUser[]>>("/v1/users")
+        .then((response) => (users.value = response.data.content))
+        .catch((e) => {
+          error.value = e.response.data.message;
+        })
+        .finally(() => {
+          loading.value = false;
+        });
+    };
+
+    const onItemsPerPageChange = (newItemsPerPage: number) => {
+      itemsPerPage.value = newItemsPerPage;
+      fetchUsers();
     };
 
     const handleSearch = () => {
-      // Implement search logic
       console.log(`Date Picked: ${dateRange.value}`);
     };
 
@@ -153,18 +165,10 @@ export default defineComponent({
       }
     };
 
-    const formatDate = (dateString: string): string => {
-      const date = new Date(dateString);
-      const year = date.getFullYear();
-      const month = date.getMonth() + 1;
-      const day = date.getDate();
-      const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
-      const weekday = weekdays[date.getDay()];
-
-      return `${year}년 ${month}월 ${day}일 ${weekday}요일`;
-    };
-
     return {
+      showList,
+      itemsPerPage,
+      onItemsPerPageChange,
       searchQuery,
       dateMenu,
       dateRange,

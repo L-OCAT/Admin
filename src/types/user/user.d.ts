@@ -2,18 +2,20 @@ export interface EndUser {
   readonly id: number;
   nickname: string;
   email: string;
-  oAuthType: string;
+  readonly oAuthType: string;
+  readonly type: string;
+  readonly statusType: string;
   readonly createdAt: string;
-  updatedAt: string;
-  status: string;
+  readonly updatedAt: string;
+  readonly deletedAt: string | null;
 }
 
 export interface AdminUser {
   readonly id: number;
   nickname: string;
   email: string;
-  deviceId: string;
+  readonly deviceId: string;
   readonly createdAt: string;
-  updatedAt: string;
-  status: string;
+  readonly updatedAt: string;
+  readonly status: string;
 }

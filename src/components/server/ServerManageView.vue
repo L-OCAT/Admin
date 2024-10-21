@@ -48,9 +48,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref, computed } from "vue";
+import { computed, defineComponent, onMounted, ref } from "vue";
 import { IHealth, IServerHealth } from "@/types/server/server-metric";
-import { requestActuator } from "@/utils/request-client";
+import { request } from "@/utils/request-client";
 import HealthComponentCard from "./HealthComponentCard.vue";
 
 export default defineComponent({
@@ -63,7 +63,7 @@ export default defineComponent({
 
     const fetchHealthInfo = async () => {
       try {
-        health.value = await requestActuator<IHealth>("/actuator/health");
+        health.value = await request<IHealth>("/actuator/health");
       } catch (error) {
         console.error("서버 상태 정보를 불러오는데 실패했습니다:", error);
       }
