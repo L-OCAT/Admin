@@ -10,7 +10,7 @@ export const useAuth = defineStore("auth", {
   }),
   actions: {
     isAuthenticated() {
-      return this.isLoggedIn && isTokenValid() && !this.isPasswordExpired;
+      return isTokenValid() && !this.isPasswordExpired;
     },
     setIsLoggedIn(isLoggedIn: boolean) {
       this.isLoggedIn = isLoggedIn;

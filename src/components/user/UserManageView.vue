@@ -1,107 +1,175 @@
 <template>
-  <v-container v-if="showList">
-    <v-card class="mb-12">
-      <v-card-title class="text-h4 font-weight-bold">
-        사용자 관리
-      </v-card-title>
-      <v-card-text>
-        <v-row>
-          <v-col cols="12" sm="6" md="4">
-            <v-text-field
-              v-model="searchQuery"
-              label="검색"
-              prepend-inner-icon="mdi-magnify"
-              clearable
-              @input="handleSearch"
-            ></v-text-field>
-          </v-col>
-          <v-col cols="12" sm="6" md="4">
-            <v-menu
-              v-model="dateMenu"
-              :close-on-content-click="false"
-              :nudge-right="40"
-              transition="scale-transition"
-              offset-y
-              min-width="auto"
-            >
-              <template v-slot:activator="{ props }">
+  <v-container fluid>
+    <!-- 목록 보기 -->
+    <v-slide-x-transition>
+      <div v-if="showList">
+        <v-card class="mb-12">
+          <v-card-title class="text-h4 font-weight-bold">
+            사용자 관리
+          </v-card-title>
+          <v-card-text>
+            <v-row>
+              <v-col cols="12" sm="6" md="4">
                 <v-text-field
-                  v-model="dateRangeText"
-                  label="검색 기간 선택"
-                  prepend-inner-icon="mdi-calendar"
-                  readonly
-                  v-bind="props"
+                  v-model="searchQuery"
+                  label="검색"
+                  prepend-inner-icon="mdi-magnify"
+                  clearable
+                  @keyup.enter="handleSearch"
                 ></v-text-field>
-              </template>
-              <v-date-picker
-                v-model="dateRange"
-                range
-                no-title
-                multiple
-                color="#ff5f2c"
-                @update:model-value="handleDateSelect"
-                locale="ko-KR"
+              </v-col>
+              <v-col cols="12" sm="6" md="4">
+                <v-menu
+                  v-model="dateMenu"
+                  :close-on-content-click="false"
+                  :nudge-right="40"
+                  transition="scale-transition"
+                  offset-y
+                  min-width="auto"
+                >
+                  <template v-slot:activator="{ props }">
+                    <v-text-field
+                      v-model="dateRangeText"
+                      label="검색 기간 선택"
+                      prepend-inner-icon="mdi-calendar"
+                      readonly
+                      v-bind="props"
+                    ></v-text-field>
+                  </template>
+                  <v-date-picker
+                    v-model="dateRange"
+                    range
+                    no-title
+                    multiple
+                    color="#ff5f2c"
+                    @update:model-value="handleDateSelect"
+                    locale="ko-KR"
+                  >
+                  </v-date-picker>
+                </v-menu>
+              </v-col>
+              <v-col
+                cols="12"
+                sm="6"
+                md="4"
+                class="d-flex justify-end align-center"
               >
-              </v-date-picker>
-            </v-menu>
-          </v-col>
-          <v-col
-            cols="12"
-            sm="6"
-            md="4"
-            class="d-flex justify-end align-center"
-          >
-            <v-btn color="#ff5f2c" @click="fetchUsers" dark>검색</v-btn>
-          </v-col>
-        </v-row>
-      </v-card-text>
-    </v-card>
+                <v-btn color="#ff5f2c" @click="handleSearch" dark>검색</v-btn>
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-card>
 
-    <v-data-table
-      :headers="headers"
-      :items="users"
-      :items-per-page="itemsPerPage"
-      :items-per-page-options="[10, 20, 30, 50]"
-      @update:items-per-page="onItemsPerPageChange"
-      items-per-page-text="페이지 당 아이템 수"
-      no-data-text="사용자 정보를 찾을 수 없습니다."
-      :loading="loading"
-      class="elevation-1"
-    >
-      <template v-slot:[`item.createdAt`]="{ item }">
-        {{ formatDate(item.createdAt) }}
-      </template>
-      <template v-slot:[`item.updatedAt`]="{ item }">
-        {{ formatDate(item.updatedAt) }}
-      </template>
-      <template v-slot:[`item.deletedAt`]="{ item }">
-        {{ item.deletedAt ? formatDate(item.deletedAt) : "-" }}
-      </template>
-      <template v-slot:[`item.actions`]="{ item }">
-        <v-btn small color="#ff5f2c" dark :to="`/users/${item.id}`">
-          상세보기
+        <v-data-table
+          :headers="headers"
+          :items="users"
+          :items-per-page="itemsPerPage"
+          :page="currentPage"
+          :items-per-page-options="[10, 20, 30, 50]"
+          @update:page="onPageChange"
+          @update:items-per-page="onItemsPerPageChange"
+          items-per-page-text="페이지 당 아이템 수"
+          no-data-text="사용자 정보를 찾을 수 없습니다."
+          loading-text="사용자 목록을 불러오는 중..."
+          :loading="loading"
+          class="elevation-1"
+        >
+          <template v-slot:[`item.type`]="{ item }">
+            <v-chip :color="getUserTypeColor(item.type)" small dark>
+              {{ item.type }}
+            </v-chip>
+          </template>
+          <template v-slot:[`item.statusType`]="{ item }">
+            <v-chip :color="getStatusTypeColor(item.statusType)" small dark>
+              {{ item.statusType }}
+            </v-chip>
+          </template>
+          <template v-slot:[`item.oAuthType`]="{ item }">
+            <v-chip :color="getOAuthTypeColor(item.oAuthType)" small dark>
+              {{ item.oAuthType }}
+            </v-chip>
+          </template>
+          <template v-slot:[`item.createdAt`]="{ item }">
+            {{ formatDate(item.createdAt) }}
+          </template>
+          <template v-slot:[`item.updatedAt`]="{ item }">
+            {{ formatDate(item.updatedAt) }}
+          </template>
+          <template v-slot:[`item.deletedAt`]="{ item }">
+            {{ item.deletedAt ? formatDate(item.deletedAt) : "-" }}
+          </template>
+          <template v-slot:[`item.actions`]="{ item }">
+            <v-btn small color="#ff5f2c" dark @click="showUserDetail(item.id)">
+              상세보기
+            </v-btn>
+          </template>
+        </v-data-table>
+      </div>
+    </v-slide-x-transition>
+
+    <!-- 상세 보기 -->
+    <v-slide-x-reverse-transition>
+      <div v-if="!showList">
+        <v-card>
+          <v-toolbar color="#ff5f2c" dark>
+            <v-btn icon @click="backToList">
+              <v-icon>mdi-arrow-left</v-icon>
+            </v-btn>
+            <v-toolbar-title>사용자 상세 정보</v-toolbar-title>
+          </v-toolbar>
+          <user-detail-view
+            :user-id="selectedUserId"
+            @back="backToList"
+          ></user-detail-view>
+        </v-card>
+      </div>
+    </v-slide-x-reverse-transition>
+
+    <!-- 에러 스낵바 -->
+    <v-snackbar v-model="showError" :timeout="3000" color="error" bottom>
+      {{ error }}
+      <template v-slot:action="{ attrs }">
+        <v-btn color="white" text="" v-bind="attrs" @click="showError = false">
+          닫기
         </v-btn>
       </template>
-    </v-data-table>
+    </v-snackbar>
   </v-container>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted } from "vue";
+import {
+  defineComponent,
+  ref,
+  computed,
+  onMounted,
+  defineAsyncComponent,
+} from "vue";
 import { EndUser } from "@/types/user/user";
 import { formatDate } from "@/utils/date-formatter";
 import { PageResponse } from "@/types/common/response";
 import { request } from "@/utils/request-client";
+import { AxiosRequestConfig } from "axios";
 
 export default defineComponent({
   name: "UserManageView",
-  methods: { formatDate },
+  components: {
+    UserDetailView: defineAsyncComponent(
+      () => import("@/components/user/UserDetailView.vue")
+    ),
+  },
   setup() {
     const showList = ref(true);
+    const selectedUserId = ref<number | null>(null);
     const searchQuery = ref("");
     const dateRange = ref<string[]>([]);
     const dateMenu = ref(false);
     const loading = ref(false);
+    const currentPage = ref(1);
+    const itemsPerPage = ref(20);
+    const totalItems = ref(0);
+    const error = ref<string | null>(null);
+    const showError = ref(false);
 
     const headers = [
       { title: "번호", align: "start" as const, sortable: true, key: "id" },
@@ -115,38 +183,90 @@ export default defineComponent({
       { title: "탈퇴일", key: "deletedAt" },
       { title: "관리", key: "actions", sortable: false },
     ];
+
     const users = ref<EndUser[]>([]);
-    const error = ref<string | null>(null);
 
-    const itemsPerPage = ref(20);
+    const getUserTypeColor = (type: string) => {
+      const colors: { [key: string]: string } = {
+        ADMIN: "deep-purple",
+        USER: "blue",
+      };
+      return colors[type] || "grey";
+    };
 
-    onMounted(() => {
-      fetchUsers();
-    });
+    const getStatusTypeColor = (status: string) => {
+      const colors: { [key: string]: string } = {
+        ACTIVE: "success",
+        INACTIVE: "warning",
+        BANNED: "error",
+      };
+      return colors[status] || "grey";
+    };
 
-    const fetchUsers = async () => {
+    const getOAuthTypeColor = (type: string) => {
+      const colors: { [key: string]: string } = {
+        GOOGLE: "red",
+        KAKAO: "yellow darken-2",
+        NAVER: "green",
+      };
+      return colors[type] || "grey";
+    };
+
+    const fetchUsers = async (options?: AxiosRequestConfig) => {
       loading.value = true;
-      request<PageResponse<EndUser[]>>("/v1/users")
-        .then((response) => (users.value = response.data.content))
-        .catch((e) => {
-          error.value = e.response.data.message;
-        })
-        .finally(() => {
-          loading.value = false;
+      const params = {
+        page: currentPage.value,
+        size: itemsPerPage.value,
+        search: searchQuery.value,
+        startDate: dateRange.value[0],
+        endDate: dateRange.value[1],
+        ...options?.params,
+      };
+
+      try {
+        const response = await request<PageResponse<EndUser[]>>("/v1/users", {
+          ...options,
+          params,
         });
+        users.value = response.data.content;
+        totalItems.value = response.data.totalElements;
+      } catch (e: any) {
+        error.value =
+          e.response?.data?.message || "사용자 정보를 불러오는데 실패했습니다.";
+        showError.value = true;
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    const showUserDetail = (userId: number) => {
+      selectedUserId.value = userId;
+      showList.value = false;
+    };
+
+    const backToList = () => {
+      showList.value = true;
+      selectedUserId.value = null;
+    };
+
+    const onPageChange = (page: number) => {
+      currentPage.value = page;
+      fetchUsers();
     };
 
     const onItemsPerPageChange = (newItemsPerPage: number) => {
       itemsPerPage.value = newItemsPerPage;
+      currentPage.value = 1;
       fetchUsers();
     };
 
     const handleSearch = () => {
-      console.log(`Date Picked: ${dateRange.value}`);
+      currentPage.value = 1;
+      fetchUsers();
     };
 
     const dateRangeText = computed(() => {
-      if (dateRange.value && dateRange.value.length > 0) {
+      if (dateRange.value?.length > 0) {
         if (dateRange.value.length === 1) {
           return formatDate(dateRange.value[0]);
         } else if (dateRange.value.length === 2) {
@@ -161,14 +281,20 @@ export default defineComponent({
     const handleDateSelect = (dates: string[]) => {
       dateRange.value = dates;
       if (dates.length === 2) {
-        dateMenu.value = false; // 시작-종료 날짜를 모두 골랐다면, 달력을 닫음
+        dateMenu.value = false;
       }
     };
 
+    onMounted(() => {
+      fetchUsers();
+    });
+
     return {
       showList,
+      selectedUserId,
+      currentPage,
       itemsPerPage,
-      onItemsPerPageChange,
+      totalItems,
       searchQuery,
       dateMenu,
       dateRange,
@@ -176,9 +302,18 @@ export default defineComponent({
       loading,
       headers,
       users,
+      error,
+      showError,
       handleSearch,
       handleDateSelect,
-      fetchUsers,
+      showUserDetail,
+      backToList,
+      onPageChange,
+      onItemsPerPageChange,
+      formatDate,
+      getUserTypeColor,
+      getStatusTypeColor,
+      getOAuthTypeColor,
     };
   },
 });
@@ -207,5 +342,23 @@ export default defineComponent({
 .v-btn {
   text-transform: none;
   font-weight: 600;
+}
+
+/* 트랜지션 효과 */
+.v-slide-x-transition-enter-active,
+.v-slide-x-transition-leave-active,
+.v-slide-x-reverse-transition-enter-active,
+.v-slide-x-reverse-transition-leave-active {
+  transition: transform 0.3s ease-out;
+}
+
+.v-slide-x-transition-enter-from,
+.v-slide-x-reverse-transition-leave-to {
+  transform: translateX(-100%);
+}
+
+.v-slide-x-transition-leave-to,
+.v-slide-x-reverse-transition-enter-from {
+  transform: translateX(100%);
 }
 </style>

@@ -121,7 +121,7 @@ export default defineComponent({
       if (accessToken) {
         const userDetails = parseJwt(accessToken);
         username.value = `${userDetails.name}(${userDetails.sub})`;
-        userRole.value = userDetails.auth[0].authority;
+        userRole.value = userDetails.auth;
       }
     });
 

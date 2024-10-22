@@ -2,7 +2,7 @@
   <v-container>
     <v-card>
       <v-card-title class="d-flex align-center pa-4">
-        <span class="text-h5 font-weight-bold">서버 상태 대시보드</span>
+        <span class="text-h4 font-weight-bold">서버 상태 대시보드</span>
         <v-chip
           v-if="health"
           :color="getStatusColor(health.status)"
