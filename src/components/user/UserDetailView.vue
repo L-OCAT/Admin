@@ -9,90 +9,119 @@
         <v-row>
           <!-- 기본 정보 섹션 -->
           <v-col cols="12" md="6">
-            <v-card elevation="2">
-              <v-card-title class="primary lighten-1 white--text">
-                <v-icon left color="white">mdi-account-circle</v-icon>
+            <v-card elevation="2" class="mb-6">
+              <v-card-title class="primary lighten-1 white--text py-4">
+                <v-icon left color="white" class="mr-2"
+                  >mdi-account-circle</v-icon
+                >
                 기본 정보
               </v-card-title>
               <v-card-text class="pa-4">
-                <v-list dense>
-                  <v-list-item>
-                    <v-list-item-title class="font-weight-bold"
-                      >닉네임</v-list-item-title
-                    >
-                    <v-list-item-subtitle>{{
-                      userDetail.nickname
-                    }}</v-list-item-subtitle>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-title class="font-weight-bold"
-                      >이메일</v-list-item-title
-                    >
-                    <v-list-item-subtitle>{{
-                      userDetail.email
-                    }}</v-list-item-subtitle>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-title class="font-weight-bold"
-                      >가입 방식</v-list-item-title
-                    >
-                    <v-list-item-subtitle>
-                      <v-chip
-                        small
-                        :color="getOAuthTypeColor(userDetail.oAuthType)"
+                <v-list>
+                  <v-list-item class="mb-3">
+                    <v-list-item-content>
+                      <v-list-item-title
+                        class="text-subtitle-1 font-weight-bold mb-1"
+                        >닉네임</v-list-item-title
                       >
-                        {{ userDetail.oAuthType }}
-                      </v-chip>
-                    </v-list-item-subtitle>
+                      <v-list-item-subtitle class="text-body-1">{{
+                        userDetail.nickname
+                      }}</v-list-item-subtitle>
+                    </v-list-item-content>
                   </v-list-item>
-                  <v-list-item>
-                    <v-list-item-title class="font-weight-bold"
-                      >권한</v-list-item-title
-                    >
-                    <v-list-item-subtitle>
-                      <v-chip small :color="getUserTypeColor(userDetail.type)">
-                        {{ userDetail.type }}
-                      </v-chip>
-                    </v-list-item-subtitle>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-title class="font-weight-bold"
-                      >상태</v-list-item-title
-                    >
-                    <v-list-item-subtitle>
-                      <v-chip
-                        small
-                        :color="getStatusTypeColor(userDetail.statusType)"
+                  <v-list-item class="mb-3">
+                    <v-list-item-content>
+                      <v-list-item-title
+                        class="text-subtitle-1 font-weight-bold mb-1"
+                        >이메일</v-list-item-title
                       >
-                        {{ userDetail.statusType }}
-                      </v-chip>
-                    </v-list-item-subtitle>
+                      <v-list-item-subtitle class="text-body-1">{{
+                        userDetail.email
+                      }}</v-list-item-subtitle>
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-list-item class="mb-3">
+                    <v-list-item-content>
+                      <v-list-item-title
+                        class="text-subtitle-1 font-weight-bold mb-1"
+                        >가입 방식</v-list-item-title
+                      >
+                      <v-list-item-subtitle>
+                        <v-chip
+                          small
+                          :color="getOAuthTypeColor(userDetail.oAuthType)"
+                          class="white--text"
+                        >
+                          {{ userDetail.oAuthType }}
+                        </v-chip>
+                      </v-list-item-subtitle>
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-list-item class="mb-3">
+                    <v-list-item-content>
+                      <v-list-item-title
+                        class="text-subtitle-1 font-weight-bold mb-1"
+                        >권한</v-list-item-title
+                      >
+                      <v-list-item-subtitle>
+                        <v-chip
+                          small
+                          :color="getUserTypeColor(userDetail.type)"
+                          class="white--text"
+                        >
+                          {{ userDetail.type }}
+                        </v-chip>
+                      </v-list-item-subtitle>
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-list-item class="mb-3">
+                    <v-list-item-content>
+                      <v-list-item-title
+                        class="text-subtitle-1 font-weight-bold mb-1"
+                        >상태</v-list-item-title
+                      >
+                      <v-list-item-subtitle>
+                        <v-chip
+                          small
+                          :color="getStatusTypeColor(userDetail.statusType)"
+                          class="white--text"
+                        >
+                          {{ userDetail.statusType }}
+                        </v-chip>
+                      </v-list-item-subtitle>
+                    </v-list-item-content>
                   </v-list-item>
                   <v-list-item>
-                    <v-list-item-title class="font-weight-bold"
-                      >가입일</v-list-item-title
-                    >
-                    <v-list-item-subtitle>{{
-                      formatDate(userDetail.createdAt)
-                    }}</v-list-item-subtitle>
+                    <v-list-item-content>
+                      <v-list-item-title
+                        class="text-subtitle-1 font-weight-bold mb-1"
+                        >가입일</v-list-item-title
+                      >
+                      <v-list-item-subtitle class="text-body-1">{{
+                        formatDate(userDetail.createdAt)
+                      }}</v-list-item-subtitle>
+                    </v-list-item-content>
                   </v-list-item>
                 </v-list>
               </v-card-text>
             </v-card>
           </v-col>
 
+          <!-- 활동 정보 섹션 -->
           <v-col cols="12" md="6">
-            <v-card elevation="2" height="100%">
-              <v-card-title class="success lighten-1 white--text">
-                <v-icon left color="white">mdi-chart-box</v-icon>
+            <v-card elevation="2" height="100%" class="mb-6">
+              <v-card-title class="success lighten-1 white--text py-4">
+                <v-icon left color="white" class="mr-2">mdi-chart-box</v-icon>
                 활동 정보
               </v-card-title>
               <v-card-text class="pa-4">
-                <v-row>
+                <v-row class="mb-4">
                   <v-col cols="6">
                     <v-card class="text-center" outlined>
                       <v-card-text>
-                        <div class="text-h4 font-weight-bold primary--text">
+                        <div
+                          class="text-h4 font-weight-bold primary--text mb-2"
+                        >
                           {{
                             userDetail.activityDetails.totalRegisteredLostItems
                           }}
@@ -104,7 +133,9 @@
                   <v-col cols="6">
                     <v-card class="text-center" outlined>
                       <v-card-text>
-                        <div class="text-h4 font-weight-bold success--text">
+                        <div
+                          class="text-h4 font-weight-bold success--text mb-2"
+                        >
                           {{
                             userDetail.activityDetails.totalRegisteredFoundItems
                           }}
@@ -114,14 +145,65 @@
                     </v-card>
                   </v-col>
                 </v-row>
+
+                <!-- Lost Items Statistics -->
+                <v-card outlined class="mb-4">
+                  <v-card-title class="subtitle-1">분실물 통계</v-card-title>
+                  <v-card-text v-if="lostItemStat">
+                    <v-row>
+                      <v-col cols="6">
+                        <div class="caption grey--text">진행중</div>
+                        <div class="text-h6 primary--text">
+                          {{ lostItemStat.inProgress }}
+                        </div>
+                      </v-col>
+                      <v-col cols="6">
+                        <div class="caption grey--text">완료</div>
+                        <div class="text-h6 success--text">
+                          {{ lostItemStat.completed }}
+                        </div>
+                      </v-col>
+                    </v-row>
+                  </v-card-text>
+                </v-card>
+
+                <!-- Found Items Statistics -->
+                <v-card outlined>
+                  <v-card-title class="subtitle-1">습득물 통계</v-card-title>
+                  <v-card-text v-if="foundItemStat">
+                    <v-row>
+                      <v-col cols="4">
+                        <div class="caption grey--text">진행중</div>
+                        <div class="text-h6 primary--text">
+                          {{ foundItemStat.inProgress }}
+                        </div>
+                      </v-col>
+                      <v-col cols="4">
+                        <div class="caption grey--text">완료</div>
+                        <div class="text-h6 success--text">
+                          {{ foundItemStat.completed }}
+                        </div>
+                      </v-col>
+                      <v-col cols="4">
+                        <div class="caption grey--text">미완료</div>
+                        <div class="text-h6 error--text">
+                          {{ foundItemStat.incompleted }}
+                        </div>
+                      </v-col>
+                    </v-row>
+                  </v-card-text>
+                </v-card>
               </v-card-text>
             </v-card>
           </v-col>
 
+          <!-- 약관 동의 내역 섹션 -->
           <v-col cols="12">
             <v-card elevation="2">
-              <v-card-title class="info lighten-1 white--text">
-                <v-icon left color="white">mdi-file-document</v-icon>
+              <v-card-title class="info lighten-1 white--text py-4">
+                <v-icon left color="white" class="mr-2"
+                  >mdi-file-document</v-icon
+                >
                 약관 동의 내역
               </v-card-title>
               <v-card-text class="pa-4">
@@ -137,7 +219,7 @@
                     <v-chip
                       small
                       :color="item.isAgreed ? 'success' : 'error'"
-                      :text-color="'white'"
+                      class="white--text"
                     >
                       {{ item.isAgreed ? "동의" : "미동의" }}
                     </v-chip>
@@ -173,6 +255,11 @@ import {
 import { request } from "@/utils/request-client";
 import { BaseResponse } from "@/types/common/response";
 import { AxiosRequestConfig } from "axios";
+import {
+  getOAuthTypeColor,
+  getStatusTypeColor,
+  getUserTypeColor,
+} from "@/utils/color-utils";
 
 export default defineComponent({
   name: "UserDetailView",
@@ -196,36 +283,22 @@ export default defineComponent({
         key: "termsName" as const,
         align: "start",
         sortable: false,
+        width: "40%",
       },
-      { title: "동의 여부", key: "isAgreed", align: "center" },
-      { title: "동의 일시", key: "agreedAt", align: "center", sortable: false },
+      {
+        title: "동의 여부",
+        key: "isAgreed",
+        align: "center",
+        width: "30%",
+      },
+      {
+        title: "동의 일시",
+        key: "agreedAt",
+        align: "center",
+        sortable: false,
+        width: "30%",
+      },
     ];
-
-    const getOAuthTypeColor = (type: string) => {
-      const colors: { [key: string]: string } = {
-        GOOGLE: "red lighten-1",
-        KAKAO: "yellow darken-2",
-        NAVER: "green",
-      };
-      return colors[type] || "grey";
-    };
-
-    const getUserTypeColor = (type: string) => {
-      const colors: { [key: string]: string } = {
-        ADMIN: "deep-purple",
-        USER: "blue",
-      };
-      return colors[type] || "grey";
-    };
-
-    const getStatusTypeColor = (status: string) => {
-      const colors: { [key: string]: string } = {
-        ACTIVE: "success",
-        INACTIVE: "warning",
-        BANNED: "error",
-      };
-      return colors[status] || "grey";
-    };
 
     const fetchUserData = async () => {
       loading.value = true;
@@ -300,5 +373,22 @@ export default defineComponent({
 .v-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.v-list-item {
+  padding: 12px 0;
+}
+
+.v-list-item-content {
+  padding: 8px 0;
+}
+
+.v-card-title {
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+.v-card.outlined {
+  border: 1px solid rgba(0, 0, 0, 0.12);
 }
 </style>
