@@ -25,14 +25,16 @@ export const getColorByType = (
   type: string,
   category: keyof typeof COLOR_MAPS
 ): string => {
-  const colorMap = COLOR_MAPS[category];
+  const colorMap = COLOR_MAP[category];
   return colorMap[type as keyof typeof colorMap] || colorMap.default;
 };
 
-// 사용 편의를 위한 래퍼 함수들
+/* Helper functions */
 export const getOAuthTypeColor = (type: string): string =>
   getColorByType(type, "oauth");
+
 export const getUserTypeColor = (type: string): string =>
   getColorByType(type, "userType");
+
 export const getStatusTypeColor = (type: string): string =>
   getColorByType(type, "status");
