@@ -5,7 +5,7 @@
         <span class="text-h4 font-weight-bold">서버 상태 대시보드</span>
         <v-chip
           v-if="health"
-          :color="getStatusColor(health.status)"
+          :color="getServerStatusColor(health.status)"
           text-color="white"
           label
           class="ml-4"
