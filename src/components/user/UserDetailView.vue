@@ -126,7 +126,7 @@
                             userDetail.activityDetails.totalRegisteredLostItems
                           }}
                         </div>
-                        <div class="subtitle-1">등록된 분실물</div>
+                        <div class="subtitle-1">등록한 분실물</div>
                       </v-card-text>
                     </v-card>
                   </v-col>
@@ -140,59 +140,11 @@
                             userDetail.activityDetails.totalRegisteredFoundItems
                           }}
                         </div>
-                        <div class="subtitle-1">등록된 습득물</div>
+                        <div class="subtitle-1">등록한 습득물</div>
                       </v-card-text>
                     </v-card>
                   </v-col>
                 </v-row>
-
-                <!-- Lost Items Statistics -->
-                <v-card outlined class="mb-4">
-                  <v-card-title class="subtitle-1">분실물 통계</v-card-title>
-                  <v-card-text v-if="lostItemStat">
-                    <v-row>
-                      <v-col cols="6">
-                        <div class="caption grey--text">진행중</div>
-                        <div class="text-h6 primary--text">
-                          {{ lostItemStat.inProgress }}
-                        </div>
-                      </v-col>
-                      <v-col cols="6">
-                        <div class="caption grey--text">완료</div>
-                        <div class="text-h6 success--text">
-                          {{ lostItemStat.completed }}
-                        </div>
-                      </v-col>
-                    </v-row>
-                  </v-card-text>
-                </v-card>
-
-                <!-- Found Items Statistics -->
-                <v-card outlined>
-                  <v-card-title class="subtitle-1">습득물 통계</v-card-title>
-                  <v-card-text v-if="foundItemStat">
-                    <v-row>
-                      <v-col cols="4">
-                        <div class="caption grey--text">진행중</div>
-                        <div class="text-h6 primary--text">
-                          {{ foundItemStat.inProgress }}
-                        </div>
-                      </v-col>
-                      <v-col cols="4">
-                        <div class="caption grey--text">완료</div>
-                        <div class="text-h6 success--text">
-                          {{ foundItemStat.completed }}
-                        </div>
-                      </v-col>
-                      <v-col cols="4">
-                        <div class="caption grey--text">미완료</div>
-                        <div class="text-h6 error--text">
-                          {{ foundItemStat.incompleted }}
-                        </div>
-                      </v-col>
-                    </v-row>
-                  </v-card-text>
-                </v-card>
               </v-card-text>
             </v-card>
           </v-col>

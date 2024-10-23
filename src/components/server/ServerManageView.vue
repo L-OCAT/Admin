@@ -50,8 +50,9 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, ref } from "vue";
 import { IHealth, IServerHealth } from "@/types/server/server-metric";
-import { request } from "@/utils/request-client";
+import { PUBLIC_API_KEY, request } from "@/utils/request-client";
 import HealthComponentCard from "./HealthComponentCard.vue";
+import { getServerStatusColor } from "@/utils/color-utils";
 
 export default defineComponent({
   name: "ServerManageView",
@@ -63,23 +64,13 @@ export default defineComponent({
 
     const fetchHealthInfo = async () => {
       try {
-        health.value = await request<IHealth>("/actuator/health");
+        health.value = await request<IHealth>("/actuator/health", {
+          headers: {
+            "Locat-API-Key": PUBLIC_API_KEY,
+          },
+        });
       } catch (error) {
         console.error("서버 상태 정보를 불러오는데 실패했습니다:", error);
-      }
-    };
-
-    const getStatusColor = (status: string): string => {
-      switch (status) {
-        case "UP":
-          return "green";
-        case "DOWN":
-          return "red";
-        case "OUT_OF_SERVICE":
-          return "orange";
-        case "UNKNOWN":
-        default:
-          return "grey";
       }
     };
 
@@ -102,7 +93,7 @@ export default defineComponent({
 
     return {
       health,
-      getStatusColor,
+      getServerStatusColor,
       serverHealth,
     };
   },
