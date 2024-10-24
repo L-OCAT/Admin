@@ -107,7 +107,6 @@
       </div>
     </v-slide-x-transition>
 
-    <!-- 상세 보기 -->
     <v-slide-x-reverse-transition>
       <div v-if="!showList">
         <v-card>
@@ -125,11 +124,15 @@
       </div>
     </v-slide-x-reverse-transition>
 
-    <!-- 에러 스낵바 -->
-    <v-snackbar v-model="showError" :timeout="3000" color="error" bottom>
-      {{ error }}
+    <v-snackbar
+      v-model="show"
+      :timeout="timeout"
+      :color="color"
+      :position="position"
+    >
+      {{ message }}
       <template v-slot:action="{ attrs }">
-        <v-btn color="white" text="" v-bind="attrs" @click="showError = false">
+        <v-btn color="white" text="" v-bind="attrs" @click="hideMessage">
           닫기
         </v-btn>
       </template>
@@ -150,6 +153,12 @@ import { formatDate } from "@/utils/date-formatter";
 import { PageResponse } from "@/types/common/response";
 import { request } from "@/utils/request-client";
 import { AxiosRequestConfig } from "axios";
+import {
+  getOAuthTypeColor,
+  getStatusTypeColor,
+  getUserTypeColor,
+} from "@/utils/color-utils";
+import { useSnackbar } from "@/hook/snackbar";
 
 export default defineComponent({
   name: "UserManageView",
@@ -168,8 +177,19 @@ export default defineComponent({
     const currentPage = ref(1);
     const itemsPerPage = ref(20);
     const totalItems = ref(0);
-    const error = ref<string | null>(null);
-    const showError = ref(false);
+    const {
+      show,
+      message,
+      color,
+      timeout,
+      position,
+      showMessage,
+      hideMessage,
+    } = useSnackbar();
+
+    onMounted(() => {
+      fetchUsers();
+    });
 
     const headers = [
       { title: "번호", align: "start" as const, sortable: true, key: "id" },
@@ -185,32 +205,6 @@ export default defineComponent({
     ];
 
     const users = ref<EndUser[]>([]);
-
-    const getUserTypeColor = (type: string) => {
-      const colors: { [key: string]: string } = {
-        ADMIN: "deep-purple",
-        USER: "blue",
-      };
-      return colors[type] || "grey";
-    };
-
-    const getStatusTypeColor = (status: string) => {
-      const colors: { [key: string]: string } = {
-        ACTIVE: "success",
-        INACTIVE: "warning",
-        BANNED: "error",
-      };
-      return colors[status] || "grey";
-    };
-
-    const getOAuthTypeColor = (type: string) => {
-      const colors: { [key: string]: string } = {
-        GOOGLE: "red",
-        KAKAO: "yellow darken-2",
-        NAVER: "green",
-      };
-      return colors[type] || "grey";
-    };
 
     const fetchUsers = async (options?: AxiosRequestConfig) => {
       loading.value = true;
@@ -231,9 +225,9 @@ export default defineComponent({
         users.value = response.data.content;
         totalItems.value = response.data.totalElements;
       } catch (e: any) {
-        error.value =
-          e.response?.data?.message || "사용자 정보를 불러오는데 실패했습니다.";
-        showError.value = true;
+        showMessage(
+          e.response?.data?.message || "사용자 정보를 불러오는데 실패했습니다."
+        );
       } finally {
         loading.value = false;
       }
@@ -285,12 +279,15 @@ export default defineComponent({
       }
     };
 
-    onMounted(() => {
-      fetchUsers();
-    });
-
     return {
       showList,
+      show,
+      message,
+      color,
+      timeout,
+      position,
+      hideMessage,
+      showMessage,
       selectedUserId,
       currentPage,
       itemsPerPage,
@@ -302,8 +299,6 @@ export default defineComponent({
       loading,
       headers,
       users,
-      error,
-      showError,
       handleSearch,
       handleDateSelect,
       showUserDetail,
