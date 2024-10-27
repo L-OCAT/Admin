@@ -34,6 +34,13 @@
           <span class="text-caption font-weight-bold">v{{ appVersion }}</span>
           <span class="text-caption">&nbsp;&nbsp;&nbsp;&nbsp;</span>
           <span class="text-caption">{{ buildDate }}</span>
+          <div
+            v-if="isPreRelease"
+            class="text-caption text-error mt-1"
+            style="font-size: 0.65rem"
+          >
+            개발 중인 버전으로 일부 오류가 있을 수 있습니다.
+          </div>
         </div>
       </v-container>
     </v-navigation-drawer>
@@ -111,6 +118,15 @@ export default defineComponent({
     const appTheme = useAppTheme();
     const appVersion = APP_VERSION;
     const buildDate = BUILD_DATE;
+    const isPreRelease = computed(() => {
+      const version = APP_VERSION.toLowerCase();
+      return (
+        version.includes("alpha") ||
+        version.includes("beta") ||
+        version.includes("rc") ||
+        version.includes("dev")
+      );
+    });
     const currentView = ref("UserManageView");
     const username = ref("");
     const userRole = ref("");
@@ -124,7 +140,7 @@ export default defineComponent({
       if (accessToken) {
         const userDetails = parseJwt(accessToken);
         username.value = `${userDetails.name}(${userDetails.sub})`;
-        userRole.value = userDetails.auth[0].authority;
+        userRole.value = userDetails.auth;
       }
     });
 
@@ -158,6 +174,7 @@ export default defineComponent({
     return {
       appVersion,
       buildDate,
+      isPreRelease,
       isDarkMode: computed(() => appTheme.isDarkMode),
       toggleDarkMode: () => appTheme.toggle(),
       currentView,

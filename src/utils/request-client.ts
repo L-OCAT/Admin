@@ -1,6 +1,8 @@
 import { getProperty } from "@/utils/environment";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
+export const PUBLIC_API_KEY = getProperty("API_PUBLIC_KEY");
+
 const API_URL = getProperty("API_URL");
 
 const axiosInstance = axios.create({
