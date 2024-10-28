@@ -31,6 +31,19 @@
       <v-btn class="mt-6" block elevation="1" rounded @click="login">
         로그인
       </v-btn>
+      <div class="text-center mt-6">
+        <span class="divider-text">또는</span>
+      </div>
+      <v-btn
+        text=""
+        block
+        class="mt-4 social-login-btn"
+        @click="$emit('update:view', 'SocialLoginView')"
+        height="44"
+      >
+        <v-icon left color="#666666" size="20">mdi-account-group</v-icon>
+        <span>소셜 로그인으로 계속하기</span>
+      </v-btn>
     </v-form>
   </v-card>
 </template>
@@ -45,6 +58,7 @@ import { BaseResponse } from "@/types/common/response";
 
 export default defineComponent({
   name: "LoginView",
+  emits: ["update:view"],
   setup() {
     const auth = useAuth();
 
@@ -153,5 +167,59 @@ h1 {
   font-size: 0.75rem;
   font-weight: bold;
   color: #ff0000;
+}
+
+.primary-login-btn {
+  background-color: #ff5f2c !important;
+  color: white !important;
+  font-size: 1rem;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.divider-text {
+  position: relative;
+  color: #999;
+  font-size: 0.875rem;
+  padding: 0 12px;
+}
+
+.divider-text::before,
+.divider-text::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 80px;
+  height: 1px;
+  background-color: #e0e0e0;
+}
+
+.divider-text::before {
+  right: 100%;
+}
+
+.divider-text::after {
+  left: 100%;
+}
+
+.social-login-btn {
+  color: #666666 !important;
+  background-color: transparent !important;
+  border: 1px solid #e0e0e0 !important;
+  font-size: 0.9rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  transition: all 0.2s ease;
+}
+
+.social-login-btn:hover {
+  background-color: #f5f5f5 !important;
+  border-color: #d0d0d0 !important;
+}
+
+.social-login-btn .v-icon {
+  margin-right: 8px;
 }
 </style>

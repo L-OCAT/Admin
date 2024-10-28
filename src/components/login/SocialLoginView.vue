@@ -1,5 +1,10 @@
 <template>
   <v-card class="pa-6" elevation="2">
+    <div class="d-flex align-center mb-6">
+      <v-btn icon small class="mr-2" @click="$emit('update:view', 'LoginView')">
+        <v-icon>mdi-arrow-left</v-icon>
+      </v-btn>
+    </div>
     <h1 class="text-center mb-6" style="font-weight: bold; font-size: 24px">
       LOCAT Admin Console
     </h1>
@@ -12,18 +17,6 @@
         style="cursor: pointer"
       />
     </div>
-    <v-btn
-      class="mb-4"
-      block
-      elevation="1"
-      rounded
-      color="#000000"
-      @click="loginWithApple"
-      height="50"
-    >
-      <v-icon left>mdi-apple</v-icon>
-      Sign in with Apple
-    </v-btn>
     <v-alert type="error" v-if="errorMessage" dense text="">
       {{ errorMessage }}
     </v-alert>
@@ -42,13 +35,14 @@ const KAKAO_REDIRECT_URI = getProperty("KAKAO_REDIRECT_URI");
 
 export default defineComponent({
   name: "SocialLoginView",
+  emits: ["update:view"],
   setup() {
     const auth = useAuth();
     const route = useRoute();
     const errorMessage = ref("");
 
     onMounted(() => {
-      if (window.location.href.startsWith("http://localhost:3000")) {
+      if (window.location.href.startsWith(KAKAO_REDIRECT_URI)) {
         handleOAuthRedirect();
       }
     });
