@@ -72,7 +72,7 @@ export default defineComponent({
         return;
       }
       // 비밀번호 재설정 요청
-      request<{ success: boolean }>("/v1/admin/reset-password", {
+      request<{ success: boolean }>("/v1/admin/users/me/password", {
         method: "POST",
         data: JSON.stringify({
           userId: auth.userId,
