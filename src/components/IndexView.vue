@@ -3,7 +3,10 @@
     class="d-flex flex-column align-center justify-center"
     fill-height
   >
-    <component :is="currentView"></component>
+    <component
+      :is="currentView"
+      @update:view="currentView = $event"
+    ></component>
   </v-container>
 </template>
 
