@@ -24,12 +24,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from "vue";
-import { useAuth } from "@/store/auth";
+import { defineComponent, ref } from "vue";
 import { getProperty } from "@/utils/environment";
-import { useRoute } from "vue-router";
-import { request } from "@/utils/request-client";
-import { TokenDto } from "@/types/admin/login-response";
 
 const KAKAO_REDIRECT_URI = getProperty("KAKAO_REDIRECT_URI");
 
@@ -37,15 +33,7 @@ export default defineComponent({
   name: "SocialLoginView",
   emits: ["update:view"],
   setup() {
-    const auth = useAuth();
-    const route = useRoute();
     const errorMessage = ref("");
-
-    onMounted(() => {
-      if (window.location.href.startsWith(KAKAO_REDIRECT_URI)) {
-        handleOAuthRedirect();
-      }
-    });
 
     const loginWithKakao = async () => {
       try {
@@ -63,28 +51,6 @@ export default defineComponent({
         alert("준비 중입니다.");
       } catch (error) {
         errorMessage.value = "Apple 로그인 중 오류가 발생했습니다.";
-      }
-    };
-
-    const handleOAuthRedirect = () => {
-      const oAuthId = route.query.oAuthId as string;
-      if (oAuthId) {
-        request<TokenDto>("/v1/users", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          data: JSON.stringify({
-            oAuthId: oAuthId,
-            nickname: "LOCAT" + Math.floor(Math.random() * 10000),
-            isTermsOfServiceAgreed: true,
-            isPrivacyPolicyAgreed: true,
-            isLocationPolicyAgreed: true,
-            isMarketingPolicyAgreed: false,
-          }),
-        }).then((response) => {
-          alert(response);
-        });
       }
     };
 

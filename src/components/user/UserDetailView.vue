@@ -1,19 +1,23 @@
 <template>
   <v-container>
     <v-card class="detail-view">
-      <v-card-title class="d-flex justify-space-between align-center pa-6">
-        <span class="text-h4">사용자 상세 정보</span>
-      </v-card-title>
+      <div v-if="loading" class="text-center pa-6">
+        <v-progress-circular
+          indeterminate
+          color="primary"
+        ></v-progress-circular>
+      </div>
 
-      <v-card-text v-if="userDetail" class="pa-6">
+      <div v-else-if="error" class="text-center pa-6 error--text">
+        {{ error }}
+      </div>
+
+      <v-card-text v-else-if="userDetail" class="pa-6">
         <v-row>
-          <!-- 기본 정보 섹션 -->
           <v-col cols="12" md="6">
-            <v-card elevation="2" class="mb-6">
+            <v-card elevation="2" class="info-card mb-6">
               <v-card-title class="primary lighten-1 white--text py-4">
-                <v-icon left color="white" class="mr-2"
-                  >mdi-account-circle</v-icon
-                >
+                <v-icon icon="mdi-account-circle" class="mr-2" />
                 기본 정보
               </v-card-title>
               <v-card-text class="pa-4">
@@ -59,19 +63,32 @@
                   </v-list-item>
                   <v-list-item class="mb-3">
                     <v-list-item-content>
-                      <v-list-item-title
-                        class="text-subtitle-1 font-weight-bold mb-1"
-                        >권한</v-list-item-title
-                      >
-                      <v-list-item-subtitle>
-                        <v-chip
+                      <div class="d-flex align-center">
+                        <div class="flex-grow-1">
+                          <v-list-item-title
+                            class="text-subtitle-1 font-weight-bold mb-1"
+                            >권한</v-list-item-title
+                          >
+                          <v-list-item-subtitle>
+                            <v-chip
+                              small
+                              :color="getUserTypeColor(userDetail.type)"
+                              class="white--text"
+                            >
+                              {{ userDetail.type }}
+                            </v-chip>
+                          </v-list-item-subtitle>
+                        </div>
+                        <v-btn
+                          v-if="currentUserAuth === 'SUPER_ADMIN'"
                           small
-                          :color="getUserTypeColor(userDetail.type)"
-                          class="white--text"
+                          color="#ff5f2c"
+                          class="ml-2"
+                          @click="showUserTypeDialog = true"
                         >
-                          {{ userDetail.type }}
-                        </v-chip>
-                      </v-list-item-subtitle>
+                          권한 변경
+                        </v-btn>
+                      </div>
                     </v-list-item-content>
                   </v-list-item>
                   <v-list-item class="mb-3">
@@ -106,12 +123,10 @@
               </v-card-text>
             </v-card>
           </v-col>
-
-          <!-- 활동 정보 섹션 -->
           <v-col cols="12" md="6">
-            <v-card elevation="2" height="100%" class="mb-6">
+            <v-card elevation="2" class="info-card mb-6">
               <v-card-title class="success lighten-1 white--text py-4">
-                <v-icon left color="white" class="mr-2">mdi-chart-box</v-icon>
+                <v-icon icon="mdi-chart-box" class="mr-2" />
                 활동 정보
               </v-card-title>
               <v-card-text class="pa-4">
@@ -149,13 +164,10 @@
             </v-card>
           </v-col>
 
-          <!-- 약관 동의 내역 섹션 -->
           <v-col cols="12">
             <v-card elevation="2">
               <v-card-title class="info lighten-1 white--text py-4">
-                <v-icon left color="white" class="mr-2"
-                  >mdi-file-document</v-icon
-                >
+                <v-icon icon="mdi-file-document" class="mr-2" />
                 약관 동의 내역
               </v-card-title>
               <v-card-text class="pa-4">
@@ -186,12 +198,33 @@
         </v-row>
       </v-card-text>
 
-      <v-card-text v-else class="text-center pa-6">
-        <v-progress-circular
-          indeterminate
-          color="primary"
-        ></v-progress-circular>
-      </v-card-text>
+      <div v-else class="text-center pa-6">사용자 정보를 찾을 수 없습니다.</div>
+
+      <v-dialog v-model="showUserTypeDialog" max-width="400">
+        <v-card>
+          <v-card-title class="headline">권한 변경</v-card-title>
+          <v-card-text>
+            <v-select
+              v-model="selectedUserType"
+              :items="userTypes"
+              label="변경할 권한"
+              item-text="label"
+              item-value="value"
+              class="mt-4"
+            ></v-select>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+              color="grey darken-1"
+              text=""
+              @click="showUserTypeDialog = false"
+              >취소</v-btn
+            >
+            <v-btn color="#ff5f2c" @click="updateUserType">변경</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-card>
   </v-container>
 </template>
@@ -212,6 +245,7 @@ import {
   getStatusTypeColor,
   getUserTypeColor,
 } from "@/utils/color-utils";
+import { parseJwt } from "@/utils/token-utils";
 
 export default defineComponent({
   name: "UserDetailView",
@@ -223,11 +257,23 @@ export default defineComponent({
   },
   emits: ["back"],
   setup(props, { emit }) {
+    const currentUserAuth = parseJwt(
+      localStorage.getItem("accessToken") || ""
+    ).auth;
     const userDetail = ref<UserStatResponse | null>(null);
     const foundItemStat = ref<AdminUserFoundItemStatResponse | null>(null);
     const lostItemStat = ref<AdminUserLostItemStatResponse | null>(null);
     const loading = ref(true);
     const error = ref<string | null>(null);
+    const showUserTypeDialog = ref(false);
+    const selectedUserType = ref<string>("");
+
+    const userTypes = [
+      { value: "SUPER_ADMIN", title: "최고 관리자" },
+      { value: "ADMIN", title: "관리자" },
+      { value: "MANAGER", title: "매니저" },
+      { value: "USER", title: "일반 사용자" },
+    ];
 
     const agreementHeaders = [
       {
@@ -251,6 +297,10 @@ export default defineComponent({
         width: "30%",
       },
     ];
+
+    const updateUserType = async () => {
+      console.log(`Update called`);
+    };
 
     const fetchUserData = async () => {
       loading.value = true;
@@ -308,6 +358,11 @@ export default defineComponent({
       getUserTypeColor,
       getStatusTypeColor,
       backToList,
+      currentUserAuth,
+      showUserTypeDialog,
+      selectedUserType,
+      userTypes,
+      updateUserType,
     };
   },
 });
@@ -342,5 +397,9 @@ export default defineComponent({
 
 .v-card.outlined {
   border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.info-card {
+  height: 100%;
 }
 </style>
