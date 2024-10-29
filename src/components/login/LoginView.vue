@@ -99,15 +99,18 @@ export default defineComponent({
         );
 
         if (response.data) {
-          auth.storeUserId(userId.value);
-          localStorage.setItem("accessToken", response.data.token.accessToken);
-          localStorage.setItem(
-            "refreshToken",
-            response.data.token.refreshToken
-          );
           if (response.data.isPasswordExpired) {
             auth.markPasswordAsExpired();
           } else {
+            auth.storeUserId(userId.value);
+            localStorage.setItem(
+              "accessToken",
+              response.data.token.accessToken
+            );
+            localStorage.setItem(
+              "refreshToken",
+              response.data.token.refreshToken
+            );
             auth.setIsLoggedIn(true);
           }
         }
