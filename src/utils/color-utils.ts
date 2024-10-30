@@ -1,10 +1,11 @@
 const COLOR_MAP = {
   oauth: {
-    KAKAO: "yellow darken-2",
+    KAKAO: "amber darken-3",
     APPLE: "black",
     default: "grey",
   },
   userType: {
+    SUPER_ADMIN: "red darken-1",
     ADMIN: "deep-purple darken-1",
     USER: "blue darken-1",
     default: "grey",
