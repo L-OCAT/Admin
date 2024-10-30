@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { isTokenValid } from "@/utils/token-utils";
+import { isTokenValid, parseJwt } from "@/utils/token-utils";
 
 export const useAuth = defineStore("auth", {
   state: () => ({
@@ -26,6 +26,14 @@ export const useAuth = defineStore("auth", {
     },
     storeUserId(userId: string) {
       this.userId = userId;
+    },
+    getAuthority() {
+      return (
+        parseJwt(localStorage.getItem("accessToken") as string).auth || "NONE"
+      );
+    },
+    isSuperAdmin() {
+      return this.getAuthority() === "SUPER_ADMIN";
     },
   },
 });

@@ -51,7 +51,7 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref } from "vue";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
-import { request } from "@/utils/request-client";
+import { PUBLIC_API_KEY, request } from "@/utils/request-client";
 import { LoginResponse } from "@/types/admin/login-response";
 import { useAuth } from "@/store/auth";
 import { BaseResponse } from "@/types/common/response";
@@ -94,15 +94,16 @@ export default defineComponent({
             }),
             headers: {
               "Content-Type": "application/json",
+              "Locat-Api-Key": PUBLIC_API_KEY,
             },
           }
         );
 
         if (response.data) {
+          auth.storeUserId(userId.value);
           if (response.data.isPasswordExpired) {
             auth.markPasswordAsExpired();
           } else {
-            auth.storeUserId(userId.value);
             localStorage.setItem(
               "accessToken",
               response.data.token.accessToken

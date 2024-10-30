@@ -75,7 +75,7 @@ export default defineComponent({
       request<{ success: boolean }>("/v1/admin/users/me/password", {
         method: "POST",
         data: JSON.stringify({
-          userId: auth.userId,
+          email: auth.userId,
           newPassword: newPassword.value,
         }),
         headers: {
