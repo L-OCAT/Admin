@@ -22,5 +22,6 @@ axiosInstance.interceptors.request.use((config) => {
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
+  config.headers["Locat-Api-Key"] = PUBLIC_API_KEY;
   return config;
 });

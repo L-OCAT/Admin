@@ -267,10 +267,10 @@ export default defineComponent({
     const selectedUserType = ref<string>("");
 
     const userTypes = [
-      { value: "SUPER_ADMIN", title: "최고 관리자" },
-      { value: "ADMIN", title: "관리자" },
-      { value: "MANAGER", title: "매니저" },
-      { value: "USER", title: "일반 사용자" },
+      { value: 0, title: "최고 관리자" },
+      { value: 1, title: "관리자" },
+      { value: 2, title: "매니저" },
+      { value: 10, title: "일반 사용자" },
     ];
 
     const agreementHeaders = [
@@ -297,7 +297,25 @@ export default defineComponent({
     ];
 
     const updateUserType = async () => {
-      console.log(`Update called`);
+      await request<BaseResponse<void>>("v1/admin/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        data: JSON.stringify({
+          id: props.userId,
+          level: selectedUserType.value,
+        }),
+      })
+        .then(() => {
+          alert("사용자 권한이 변경되었습니다.");
+          showUserTypeDialog.value = false;
+          fetchUserData();
+        })
+        .catch((e: any) => {
+          alert("사용자 권한 변경에 실패했습니다.");
+          console.error("Error updating user type:", e);
+        });
     };
 
     const fetchUserData = async () => {

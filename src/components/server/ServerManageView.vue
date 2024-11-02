@@ -55,7 +55,7 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, ref } from "vue";
 import { IHealth, IServerHealth } from "@/types/server/server-metric";
-import { PUBLIC_API_KEY, request } from "@/utils/request-client";
+import { request } from "@/utils/request-client";
 import HealthComponentCard from "./HealthComponentCard.vue";
 import { getServerStatusColor } from "@/utils/color-utils";
 import { useAuth } from "@/store/auth";
@@ -74,11 +74,7 @@ export default defineComponent({
       if (!isSuperAdmin.value) return;
 
       try {
-        health.value = await request<IHealth>("/actuator/health", {
-          headers: {
-            "Locat-Api-Key": PUBLIC_API_KEY,
-          },
-        });
+        health.value = await request<IHealth>("/actuator/health");
       } catch (error) {
         console.error("서버 상태 정보를 불러오는데 실패했습니다:", error);
       }
