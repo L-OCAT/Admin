@@ -245,7 +245,7 @@ import {
   getStatusTypeColor,
   getUserTypeColor,
 } from "@/utils/color-utils";
-import { parseJwt } from "@/utils/token-utils";
+import { useAuth } from "@/store/auth";
 
 export default defineComponent({
   name: "UserDetailView",
@@ -257,9 +257,7 @@ export default defineComponent({
   },
   emits: ["back"],
   setup(props, { emit }) {
-    const currentUserAuth = parseJwt(
-      localStorage.getItem("accessToken") || ""
-    ).auth;
+    const currentUserAuth = useAuth().getAuthority();
     const userDetail = ref<UserStatResponse | null>(null);
     const foundItemStat = ref<AdminUserFoundItemStatResponse | null>(null);
     const lostItemStat = ref<AdminUserLostItemStatResponse | null>(null);
