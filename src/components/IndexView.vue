@@ -20,7 +20,7 @@ import {
 } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuth } from "@/store/auth";
-import { request } from "@/utils/request-client";
+import { PUBLIC_API_KEY, request } from "@/utils/request-client";
 import { TokenDto } from "@/types/admin/login-response";
 
 export default defineComponent({
@@ -94,6 +94,7 @@ export default defineComponent({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Locat-Api-Key": PUBLIC_API_KEY,
         },
         data: JSON.stringify({
           oAuthId: oAuthId,

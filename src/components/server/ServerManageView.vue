@@ -66,7 +66,7 @@ export default defineComponent({
       try {
         health.value = await request<IHealth>("/actuator/health", {
           headers: {
-            "Locat-API-Key": PUBLIC_API_KEY,
+            "Locat-Api-Key": PUBLIC_API_KEY,
           },
         });
       } catch (error) {
