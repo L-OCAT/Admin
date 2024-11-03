@@ -3,12 +3,17 @@
     <v-row>
       <v-col cols="12" md="4">
         <v-card>
-          <v-card-title class="text-h6 font-weight-bold">총 유저</v-card-title>
+          <v-card-title class="text-h6 font-weight-bold"
+            ><v-icon class="mr-2">mdi-account-multiple</v-icon>등록된 사용자
+          </v-card-title>
           <v-card-text>
             <div class="d-flex align-center">
-              <span class="text-h4 font-weight-bold" style="color: #ff5f2c">{{
-                stats.totalUsers
-              }}</span>
+              <span class="text-h4 font-weight-bold" style="color: #ff5f2c">
+                <AnimatedCounter
+                  :end-value="stats.totalUsers"
+                  :duration="1000"
+                />
+              </span>
               <span class="text-subtitle-1 ml-1">&nbsp;&nbsp;명</span>
             </div>
           </v-card-text>
@@ -18,13 +23,15 @@
       <v-col cols="12" md="4">
         <v-card>
           <v-card-title class="text-h6 font-weight-bold"
-            >총 분실물</v-card-title
-          >
+            ><v-icon class="mr-2">mdi-magnify-close</v-icon>등록된 분실물
+          </v-card-title>
           <v-card-text>
             <div class="d-flex align-center">
-              <span class="text-h4 font-weight-bold" style="color: #ff5f2c">{{
-                stats.totalLostItems
-              }}</span>
+              <span class="text-h4 font-weight-bold" style="color: #ff5f2c"
+                ><AnimatedCounter
+                  :end-value="stats.totalLostItems"
+                  :duration="1000"
+              /></span>
               <span class="text-subtitle-1 ml-1">&nbsp;&nbsp;개</span>
             </div>
           </v-card-text>
@@ -33,13 +40,15 @@
       <v-col cols="12" md="4">
         <v-card>
           <v-card-title class="text-h6 font-weight-bold"
-            >총 습득물</v-card-title
-          >
+            ><v-icon class="mr-2">mdi-magnify-plus</v-icon>등록된 습득물
+          </v-card-title>
           <v-card-text>
             <div class="d-flex align-center">
-              <span class="text-h4 font-weight-bold" style="color: #ff5f2c">{{
-                stats.totalFoundItems
-              }}</span>
+              <span class="text-h4 font-weight-bold" style="color: #ff5f2c"
+                ><AnimatedCounter
+                  :end-value="stats.totalFoundItems"
+                  :duration="1000"
+              /></span>
               <span class="text-subtitle-1 ml-1">&nbsp;&nbsp;개</span>
             </div>
           </v-card-text>
@@ -51,7 +60,8 @@
       <v-col cols="12" md="4">
         <v-card>
           <v-card-title class="text-h6 font-weight-bold"
-            >전체 등록 현황</v-card-title
+            ><v-icon class="mr-2">mdi-chart-donut</v-icon>분실/습득물 등록
+            비율</v-card-title
           >
           <v-card-text>
             <div class="chart-wrapper">
@@ -67,7 +77,8 @@
       <v-col cols="12" md="8">
         <v-card>
           <v-card-title class="text-h6 font-weight-bold"
-            >월별 등록 현황</v-card-title
+            ><v-icon class="mr-2">mdi-chart-line</v-icon>월별 등록 현황
+            추이</v-card-title
           >
           <v-card-text>
             <div class="chart-wrapper">
@@ -85,7 +96,8 @@
       <v-col cols="12">
         <v-card>
           <v-card-title class="text-h6 font-weight-bold"
-            >카테고리별 등록 현황</v-card-title
+            ><v-icon class="mr-2">mdi-chart-bar</v-icon>카테고리별 등록
+            분포</v-card-title
           >
           <v-card-text>
             <div class="chart-wrapper">
@@ -119,7 +131,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import {
   ArcElement,
   BarElement,
@@ -143,6 +155,7 @@ import {
 } from "@/types/dashboard/dashboard-stat";
 import { BaseResponse } from "@/types/common/response";
 import { useSnackbar } from "@/hook/snackbar";
+import AnimatedCounter from "@/components/props/AnimatedCounter.vue";
 
 ChartJS.register(
   CategoryScale,
@@ -156,9 +169,14 @@ ChartJS.register(
   Legend
 );
 
+let fetchInterval: number;
 onMounted(() => {
   fetchAllData();
-  setInterval(fetchAllData, 60000); // 1분마다 데이터 갱신
+  fetchInterval = setInterval(fetchAllData, 60000); // 1분마다 데이터 갱신
+});
+
+onUnmounted(() => {
+  clearInterval(fetchInterval);
 });
 
 const { show, message, color, timeout, position, showMessage, hideMessage } =
