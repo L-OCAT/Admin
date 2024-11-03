@@ -150,7 +150,7 @@ export default defineComponent({
     const menuItems = [
       { title: "대시보드", icon: "mdi-view-dashboard", view: "UserManageView" },
       { title: "사용자 관리", icon: "mdi-account", view: "UserManageView" },
-      { title: "물건 관리", icon: "mdi-note-plus", view: "ItemManageView" },
+      { title: "아이템 관리", icon: "mdi-note-plus", view: "ItemManageView" },
       {
         title: "서버 상태 관리",
         icon: "mdi-heart-pulse",
