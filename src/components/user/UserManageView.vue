@@ -1,6 +1,5 @@
 <template>
   <v-container fluid>
-    <!-- 목록 보기 -->
     <v-slide-x-transition>
       <div v-if="showList">
         <v-card class="mb-12">
@@ -43,7 +42,7 @@
                   <template v-slot:activator="{ props }">
                     <v-text-field
                       v-model="dateRangeText"
-                      label="날짜 검색"
+                      label="검색 기간 선택"
                       prepend-inner-icon="mdi-calendar"
                       readonly
                       v-bind="props"
@@ -126,8 +125,8 @@
           @update:page="onPageChange"
           @update:items-per-page="onItemsPerPageChange"
           items-per-page-text="페이지 당 아이템 수"
-          no-data-text="사용자 정보를 찾을 수 없습니다."
-          loading-text="사용자 목록을 불러오는 중..."
+          no-data-text="검색 결과가 없습니다."
+          loading-text="사용자 정보를 가져오는 중..."
           :loading="loading"
           class="elevation-1"
         >

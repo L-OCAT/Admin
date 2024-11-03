@@ -115,7 +115,7 @@
                         >가입일</v-list-item-title
                       >
                       <v-list-item-subtitle class="text-body-1">{{
-                        formatDate(userDetail.createdAt)
+                        formatStringDate(userDetail.createdAt)
                       }}</v-list-item-subtitle>
                     </v-list-item-content>
                   </v-list-item>
@@ -158,6 +158,94 @@
                         <div class="subtitle-1">등록한 습득물</div>
                       </v-card-text>
                     </v-card>
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col cols="12" md="6">
+                    <div class="recent-activities">
+                      <v-card
+                        v-for="item in lostItemStat"
+                        :key="item.id"
+                        class="mb-3"
+                        outlined
+                        flat
+                      >
+                        <div class="d-flex align-center pa-3">
+                          <v-img
+                            :src="item.imageUrl || '/placeholder-image.png'"
+                            class="rounded-lg flex-shrink-0"
+                            width="48"
+                            height="48"
+                            cover
+                          >
+                            <template v-slot:placeholder>
+                              <div
+                                class="d-flex align-center justify-center fill-height grey lighten-3"
+                              >
+                                <v-icon>mdi-image</v-icon>
+                              </div>
+                            </template>
+                          </v-img>
+
+                          <div class="ml-3">
+                            <div
+                              class="text-subtitle-2 font-weight-medium text-truncate"
+                            >
+                              {{ item.name }}
+                            </div>
+                            <div class="text-body-2 text-grey-darken-1">
+                              {{ item.categoryName }}
+                            </div>
+                            <div class="text-caption text-grey">
+                              {{ formatStringDate(item.createdAt) }}
+                            </div>
+                          </div>
+                        </div>
+                      </v-card>
+                    </div>
+                  </v-col>
+                  <v-col cols="12" md="6">
+                    <div class="recent-activities">
+                      <v-card
+                        v-for="item in foundItemStat"
+                        :key="item.id"
+                        class="mb-3"
+                        outlined
+                        flat
+                      >
+                        <div class="d-flex align-center pa-3">
+                          <v-img
+                            :src="item.imageUrl || '/placeholder-image.png'"
+                            class="rounded-lg flex-shrink-0"
+                            width="48"
+                            height="48"
+                            cover
+                          >
+                            <template v-slot:placeholder>
+                              <div
+                                class="d-flex align-center justify-center fill-height grey lighten-3"
+                              >
+                                <v-icon>mdi-image</v-icon>
+                              </div>
+                            </template>
+                          </v-img>
+
+                          <div class="ml-3">
+                            <div
+                              class="text-subtitle-2 font-weight-medium text-truncate"
+                            >
+                              {{ item.name }}
+                            </div>
+                            <div class="text-body-2 text-grey-darken-1">
+                              {{ item.categoryName }}
+                            </div>
+                            <div class="text-caption text-grey">
+                              {{ formatStringDate(item.createdAt) }}
+                            </div>
+                          </div>
+                        </div>
+                      </v-card>
+                    </div>
                   </v-col>
                 </v-row>
               </v-card-text>
@@ -274,8 +362,8 @@ export default defineComponent({
   setup(props, { emit }) {
     const currentUserAuth = useAuth().getAuthority();
     const userDetail = ref<UserStatResponse | null>(null);
-    const foundItemStat = ref<AdminUserFoundItemStatResponse | null>(null);
-    const lostItemStat = ref<AdminUserLostItemStatResponse | null>(null);
+    const foundItemStat = ref<AdminUserFoundItemStatResponse[]>([]);
+    const lostItemStat = ref<AdminUserLostItemStatResponse[]>([]);
     const loading = ref(true);
     const error = ref<string | null>(null);
     const showUserTypeDialog = ref(false);
@@ -356,11 +444,11 @@ export default defineComponent({
             `/v1/admin/statistics/users/${props.userId}`,
             options
           ),
-          request<BaseResponse<AdminUserFoundItemStatResponse>>(
+          request<BaseResponse<AdminUserFoundItemStatResponse[]>>(
             `/v1/admin/statistics/users/${props.userId}/founds`,
             options
           ),
-          request<BaseResponse<AdminUserLostItemStatResponse>>(
+          request<BaseResponse<AdminUserLostItemStatResponse[]>>(
             `/v1/admin/statistics/users/${props.userId}/losts`,
             options
           ),
@@ -445,5 +533,44 @@ export default defineComponent({
 
 .info-card {
   height: 100%;
+}
+
+.activity-card {
+  transition: all 0.2s ease;
+}
+
+.activity-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+.recent-activities {
+  max-height: 500px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.recent-activities::-webkit-scrollbar {
+  width: 6px;
+}
+
+.recent-activities::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.recent-activities::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.recent-activities::-webkit-scrollbar-thumb:hover {
+  background: #666;
+}
+
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>
