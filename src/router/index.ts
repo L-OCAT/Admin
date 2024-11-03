@@ -8,13 +8,13 @@ export const BASE_URL = getProperty("BASE_URL");
 
 const routes: Array<RouteRecordRaw> = [
   {
-    path: "/",
+    path: "/login",
     name: "IndexView",
     component: IndexView,
     meta: { requiresAuth: false },
   },
   {
-    path: "/dashboard",
+    path: "/",
     name: "MainView",
     component: MainView,
   },

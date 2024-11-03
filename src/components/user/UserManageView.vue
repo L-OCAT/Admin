@@ -225,9 +225,7 @@ export default defineComponent({
         users.value = response.data.content;
         totalItems.value = response.data.totalElements;
       } catch (e: any) {
-        showMessage(
-          e.response?.data?.message || "사용자 정보를 불러오는데 실패했습니다."
-        );
+        showMessage("사용자 정보를 불러오지 못했어요.");
       } finally {
         loading.value = false;
       }

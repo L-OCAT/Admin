@@ -226,6 +226,19 @@
         </v-card>
       </v-dialog>
     </v-card>
+    <v-snackbar
+      v-model="show"
+      :timeout="timeout"
+      :color="color"
+      :position="position"
+    >
+      {{ message }}
+      <template v-slot:action="{ attrs }">
+        <v-btn color="white" text="" v-bind="attrs" @click="hideMessage">
+          닫기
+        </v-btn>
+      </template>
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -246,6 +259,7 @@ import {
   getUserTypeColor,
 } from "@/utils/color-utils";
 import { useAuth } from "@/store/auth";
+import { useSnackbar } from "@/hook/snackbar";
 
 export default defineComponent({
   name: "UserDetailView",
@@ -265,6 +279,15 @@ export default defineComponent({
     const error = ref<string | null>(null);
     const showUserTypeDialog = ref(false);
     const selectedUserType = ref<string>("");
+    const {
+      show,
+      message,
+      color,
+      timeout,
+      position,
+      showMessage,
+      hideMessage,
+    } = useSnackbar();
 
     const userTypes = [
       { value: 0, title: "최고 관리자" },
@@ -308,12 +331,12 @@ export default defineComponent({
         }),
       })
         .then(() => {
-          alert("사용자 권한이 변경되었습니다.");
+          showMessage("사용자 권한을 변경했어요.", { color: "success" });
           showUserTypeDialog.value = false;
           fetchUserData();
         })
         .catch((e: any) => {
-          alert("사용자 권한 변경에 실패했습니다.");
+          showMessage("사용자 권한 변경에 실패했어요.");
           console.error("Error updating user type:", e);
         });
     };
@@ -346,9 +369,7 @@ export default defineComponent({
         foundItemStat.value = foundResponse.data;
         lostItemStat.value = lostResponse.data;
       } catch (e: any) {
-        error.value =
-          e.response?.data?.message || "사용자 정보를 불러오는데 실패했습니다.";
-        console.error("Error fetching user details:", e);
+        showMessage("사용자의 상세 정보를 불러오지 못했어요.");
       } finally {
         loading.value = false;
       }
@@ -363,6 +384,13 @@ export default defineComponent({
     });
 
     return {
+      show,
+      message,
+      color,
+      timeout,
+      position,
+      hideMessage,
+      showMessage,
       userDetail,
       foundItemStat,
       lostItemStat,
