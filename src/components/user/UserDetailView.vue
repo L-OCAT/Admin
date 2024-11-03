@@ -189,7 +189,7 @@
                     </v-chip>
                   </template>
                   <template v-slot:[`item.agreedAt`]="{ item }">
-                    {{ item.agreedAt ? formatDate(item.agreedAt) : "-" }}
+                    {{ item.agreedAt ? formatStringDate(item.agreedAt) : "-" }}
                   </template>
                 </v-data-table>
               </v-card-text>
@@ -244,7 +244,7 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, PropType, ref } from "vue";
-import { formatDate } from "@/utils/date-formatter";
+import { formatStringDate } from "@/utils/date-formatter";
 import {
   AdminUserFoundItemStatResponse,
   AdminUserLostItemStatResponse,
@@ -263,6 +263,7 @@ import { useSnackbar } from "@/hook/snackbar";
 
 export default defineComponent({
   name: "UserDetailView",
+  methods: { formatStringDate },
   props: {
     userId: {
       type: Number as PropType<number>,
@@ -397,7 +398,6 @@ export default defineComponent({
       agreementHeaders,
       loading,
       error,
-      formatDate,
       getOAuthTypeColor,
       getUserTypeColor,
       getStatusTypeColor,

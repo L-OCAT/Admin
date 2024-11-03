@@ -158,6 +158,7 @@ ChartJS.register(
 
 onMounted(() => {
   fetchAllData();
+  setInterval(fetchAllData, 60000); // 1분마다 데이터 갱신
 });
 
 const { show, message, color, timeout, position, showMessage, hideMessage } =
@@ -178,12 +179,12 @@ const registrationData = ref<ItemRegistrationStat>({
 const monthlyData = ref<MonthlyItemStat>({
   monthLabels: [],
   lostItemCount: [],
-  foundItemCounts: [],
+  foundItemCount: [],
 });
 const categoryData = ref<ItemStatByCateogory>({
   categoryLabels: [],
   lostItemCount: [],
-  foundItemCounts: [],
+  foundItemCount: [],
 });
 
 // 차트 주, 보조 색상 정의
