@@ -1,4 +1,4 @@
-export const formatDate = (dateString: string) => {
+export const formatDate = (dateString: Date) => {
   const date = new Date(dateString);
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
@@ -7,4 +7,8 @@ export const formatDate = (dateString: string) => {
   const weekday = weekdays[date.getDay()];
 
   return `${year}년 ${month}월 ${day}일 ${weekday}요일`;
+};
+
+export const formatStringDate = (dateString: string) => {
+  return formatDate(new Date(dateString));
 };
