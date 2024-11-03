@@ -107,6 +107,9 @@ import { APP_VERSION, BUILD_DATE } from "@/App.vue";
 export default defineComponent({
   name: "MainView",
   components: {
+    DashboardView: defineAsyncComponent(
+      () => import("@/components/dashboard/DashboardView.vue")
+    ),
     UserManageView: defineAsyncComponent(
       () => import("@/components/user/UserManageView.vue")
     ),
@@ -127,7 +130,7 @@ export default defineComponent({
         version.includes("dev")
       );
     });
-    const currentView = ref("UserManageView");
+    const currentView = ref("DashboardView");
     const username = ref("");
     const userRole = ref("");
     const currentTime = ref("");
@@ -145,7 +148,7 @@ export default defineComponent({
     });
 
     const menuItems = [
-      { title: "대시보드", icon: "mdi-view-dashboard", view: "UserManageView" },
+      { title: "대시보드", icon: "mdi-view-dashboard", view: "DashboardView" },
       { title: "사용자 관리", icon: "mdi-account", view: "UserManageView" },
       {
         title: "서버 상태 관리",
@@ -162,8 +165,7 @@ export default defineComponent({
     let timer: number;
 
     const logout = () => {
-      // 로그아웃 로직 구현
-      console.log("로그아웃");
+      // TODO: Link revoke API
       invalidateToken();
       document.location.href = "/";
     };
