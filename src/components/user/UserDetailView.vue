@@ -174,9 +174,9 @@
                           <v-img
                             :src="item.imageUrl || '/placeholder-image.png'"
                             class="rounded-lg flex-shrink-0"
-                            width="48"
-                            height="48"
-                            cover
+                            style="max-width: 60px; flex-basis: 60px"
+                            width="60"
+                            height="60"
                           >
                             <template v-slot:placeholder>
                               <div
@@ -217,9 +217,9 @@
                           <v-img
                             :src="item.imageUrl || '/placeholder-image.png'"
                             class="rounded-lg flex-shrink-0"
-                            width="48"
-                            height="48"
-                            cover
+                            style="max-width: 60px; flex-basis: 60px"
+                            width="60"
+                            height="60"
                           >
                             <template v-slot:placeholder>
                               <div
