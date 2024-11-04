@@ -9,10 +9,7 @@
           <v-card-text>
             <div class="d-flex align-center">
               <span class="text-h4 font-weight-bold" style="color: #ff5f2c">
-                <AnimatedCounter
-                  :end-value="stats.totalUsers"
-                  :duration="1000"
-                />
+                <RollingCounter :end-value="stats.totalUsers" />
               </span>
               <span class="text-subtitle-1 ml-1">&nbsp;&nbsp;명</span>
             </div>
@@ -28,9 +25,7 @@
           <v-card-text>
             <div class="d-flex align-center">
               <span class="text-h4 font-weight-bold" style="color: #ff5f2c"
-                ><AnimatedCounter
-                  :end-value="stats.totalLostItems"
-                  :duration="1000"
+                ><RollingCounter :end-value="stats.totalLostItems"
               /></span>
               <span class="text-subtitle-1 ml-1">&nbsp;&nbsp;개</span>
             </div>
@@ -45,9 +40,7 @@
           <v-card-text>
             <div class="d-flex align-center">
               <span class="text-h4 font-weight-bold" style="color: #ff5f2c"
-                ><AnimatedCounter
-                  :end-value="stats.totalFoundItems"
-                  :duration="1000"
+                ><RollingCounter :end-value="stats.totalFoundItems"
               /></span>
               <span class="text-subtitle-1 ml-1">&nbsp;&nbsp;개</span>
             </div>
@@ -155,7 +148,7 @@ import {
 } from "@/types/dashboard/dashboard-stat";
 import { BaseResponse } from "@/types/common/response";
 import { useSnackbar } from "@/hook/snackbar";
-import AnimatedCounter from "@/components/props/AnimatedCounter.vue";
+import RollingCounter from "@/components/props/RollingCounter.vue";
 
 ChartJS.register(
   CategoryScale,
