@@ -1,18 +1,22 @@
 <template>
   <v-container fluid>
+    <h4 class="text-h4 font-weight-bold mb-4">아이템 관리</h4>
     <!-- 필터 옵션과 검색 버튼 -->
-    <v-card class="mb-12 pa-4" outlined>
-      <v-card-title class="text-h4 font-weight-bold">게시글 관리</v-card-title>
-      <v-row class="mt-2 align-center">
-        <v-col cols="1" class="d-flex align-center justify-end">
+    <v-card class="mb-12 pa-2">
+      <v-row class="mt-2 align-center" style="align-items: center">
+        <v-col
+          cols="1"
+          class="d-flex align-center justify-end"
+          style="align-self: center"
+        >
           <span style="font-weight: 700; font-size: 18px">물건명</span>
         </v-col>
-        <v-col cols="6" sm="6" md="4">
+        <v-col cols="4" sm="4" md="4">
           <v-text-field
             v-model="searchQuery"
             prepend-inner-icon="mdi-magnify"
             clearable
-            class="small-input"
+            density="compact"
             @keyup.enter="handleSearch"
           ></v-text-field>
         </v-col>
@@ -24,7 +28,7 @@
           </v-radio-group>
         </v-col>
       </v-row>
-      <v-row>
+      <v-row class="mt-2 align-center">
         <v-col cols="1" class="d-flex align-center justify-end">
           <span style="font-weight: 700; font-size: 18px">카테고리</span>
         </v-col>
@@ -45,7 +49,7 @@
           ></v-select>
         </v-col>
       </v-row>
-      <v-row>
+      <v-row class="mt-1 align-center">
         <v-col cols="1" class="d-flex align-center justify-end">
           <span style="font-weight: 700; font-size: 18px">등록일</span>
         </v-col>
@@ -76,13 +80,8 @@
             ></v-date-picker>
           </v-menu>
         </v-col>
-        <!--        <v-col cols="12" sm="6" md="3" class="d-flex align-center">-->
-        <!--          <v-btn text @click="selectDateRange(7)">1주일</v-btn>-->
-        <!--          <v-btn text @click="selectDateRange(30)">1개월</v-btn>-->
-        <!--          <v-btn text @click="selectDateRange(90)">3개월</v-btn>-->
-        <!--        </v-col>-->
       </v-row>
-      <v-row>
+      <v-row class="mt-1 align-center">
         <v-col cols="1" class="d-flex align-center justify-end">
           <span style="font-weight: 700; font-size: 18px">위치</span>
         </v-col>
@@ -107,7 +106,6 @@
         </v-col>
       </v-row>
     </v-card>
-
     <v-slide-x-transition>
       <div v-if="showList">
         <!-- 목록 테이블 -->
@@ -144,7 +142,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted } from "vue";
+import { defineComponent, ref, computed } from "vue";
 import { Item } from "@/types/item/item";
 import { formatDate } from "@/utils/date-formatter";
 import { PageResponse } from "@/types/common/response";
@@ -235,16 +233,6 @@ export default defineComponent({
       }
     };
 
-    const selectDateRange = (days: number) => {
-      const today = new Date();
-      const pastDate = new Date(today);
-      pastDate.setDate(today.getDate() - days);
-      dateRange.value = [
-        pastDate.toISOString().split("T")[0],
-        today.toISOString().split("T")[0],
-      ];
-    };
-
     const onPageChange = (page: number) => {
       currentPage.value = page;
       fetchItems();
@@ -291,7 +279,7 @@ export default defineComponent({
 });
 </script>
 
-<style>
+<style scoped>
 .v-data-table {
   border-radius: 8px;
   overflow: hidden;
@@ -318,36 +306,32 @@ export default defineComponent({
   transform: translateX(100%);
 }
 /* 아이콘을 감싸는 v-field__prepend-inner에 스타일 추가 */
-.small-input .v-field__prepend-inner {
+/*.small-input .v-field__prepend-inner {
   display: flex;
   align-items: center;
-  height: 36px; /* 부모 요소 높이에 맞게 설정 */
-  padding: 0 4px; /* 필요에 따라 패딩 조절 */
-  justify-content: center; /* 아이콘을 수평 중앙에 오도록 설정 */
+  height: 36px; !* 부모 요소 높이에 맞게 설정 *!
+  padding: 0 4px; !* 필요에 따라 패딩 조절 *!
+  justify-content: center; !* 아이콘을 수평 중앙에 오도록 설정 *!
 }
-/* 아이콘 크기와 위치 조정 */
-.small-input .v-field__prepend-inner-icon {
-  display: flex;
-  align-items: center;
-  height: 100%; /* 부모 요소 높이에 맞게 설정 */
-  padding: 0 4px; /* 필요에 따라 패딩 조절 */
-  justify-content: center; /* 아이콘을 수평 중앙에 오도록 설정 */
-  font-size: 18px !important; /* 아이콘 크기 조정 */
-  line-height: 1 !important; /* 아이콘이 상하단으로 밀리지 않도록 설정 */
-  margin-top: -2px; /* 수직 위치 조정 */
-}
-/* 텍스트 필드 전체 높이와 내부 패딩 */
 .small-input .v-input__control {
-  height: 36px !important; /* 텍스트 필드 전체 높이 */
-  max-height: 36px !important;
+  height: 30px !important; !* 텍스트 필드 전체 높이 *!
+  max-height: 30px !important;
 }
 .small-input .v-input__slot {
-  padding-top: 4px !important;
-  padding-bottom: 4px !important;
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
 }
-/* 텍스트 크기와 줄 간격 조정 */
 .small-input input {
   font-size: 14px !important;
-  line-height: 1.5 !important; /* 줄 간격 조정 */
+  line-height: 1 !important;
 }
+.label-text {
+  font-weight: 700;
+  font-size: 18px;
+  display: flex;
+  align-items: center !important; !* 수직 중앙 정렬 강제 *!
+  justify-content: center; !* 수평 중앙 정렬 *!
+  height: 100%; !* 텍스트 필드의 높이에 맞춤 *!
+  line-height: 1 !important; !* 기본 line-height 설정 *!
+}*/
 </style>
