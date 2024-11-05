@@ -410,7 +410,6 @@ export default defineComponent({
   font-weight: 600;
 }
 
-/* 트랜지션 효과 */
 .v-slide-x-transition-enter-active,
 .v-slide-x-transition-leave-active,
 .v-slide-x-reverse-transition-enter-active,
