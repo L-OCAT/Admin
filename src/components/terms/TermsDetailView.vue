@@ -1,7 +1,6 @@
 <template>
   <v-form ref="form" v-model="isValid" @submit.prevent="handleSubmit">
     <v-card-text class="pt-4">
-      <!-- 기본 정보 영역 -->
       <v-row>
         <v-col cols="6">
           <v-text-field
@@ -23,17 +22,7 @@
           ></v-select>
         </v-col>
         <v-col cols="3">
-          <v-text-field
-            v-model="termData.version"
-            label="버전*"
-            :rules="[
-              (v) => !!v || '버전은 필수입니다',
-              (v) =>
-                /^\d+\.\d+\.\d+$/.test(v) || '버전은 x.x.x 형식이어야 합니다',
-            ]"
-            hint="예: 1.0.0"
-            required
-          ></v-text-field>
+          <v-text-field v-model="nextVersion" readonly></v-text-field>
         </v-col>
       </v-row>
       <v-row>
@@ -41,15 +30,7 @@
           <v-switch
             v-model="termData.isRequired"
             color="#FF5F2C"
-            label="필수 약관"
-            inset
-          ></v-switch>
-        </v-col>
-        <v-col cols="3" class="d-flex align-center">
-          <v-switch
-            v-model="termData.isActive"
-            color="#FF5F2C"
-            label="즉시 활성화"
+            label="필수 여부"
             inset
           ></v-switch>
         </v-col>
@@ -78,7 +59,7 @@
                   <v-icon>mdi-code-tags</v-icon>
                   HTML
                 </v-btn>
-                <v-btn value="diff">
+                <v-btn v-if="termData.version > 1.0" value="diff">
                   <v-icon>mdi-compare</v-icon>
                   차이점
                 </v-btn>
@@ -109,7 +90,7 @@
               </div>
 
               <div v-else-if="editorMode === 'diff'" class="diff-preview pa-4">
-                <terms-diff-viewer
+                <terms-diff-view
                   v-if="previousVersion"
                   :previous-terms="previousVersion"
                   :current-terms="termData"
@@ -125,7 +106,7 @@
       <v-row>
         <v-col cols="12">
           <v-textarea
-            v-model="termData.description"
+            v-model="termData.revisionNote"
             label="변경 사유"
             rows="3"
             placeholder="약관이 변경된 이유나 주요 변경사항을 입력하세요"
@@ -134,7 +115,7 @@
         </v-col>
       </v-row>
 
-      <v-row v-if="termId">
+      <v-row v-if="termType">
         <v-col cols="12">
           <v-expansion-panels variant="accordion">
             <v-expansion-panel>
@@ -193,11 +174,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted, watch } from "vue";
+import { defineComponent, ref, onMounted, watch, computed } from "vue";
 import { QuillEditor } from "@vueup/vue-quill";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
 import { formatStringDate } from "@/utils/date-formatter";
 import TermsDiffView from "@/components/terms/TermsDiffView.vue";
+import { request } from "@/utils/request-client";
+import { BaseResponse } from "@/types/common/response";
+import { TermsResponse } from "@/types/terms";
 
 export default defineComponent({
   name: "TermDetailView",
@@ -207,9 +191,9 @@ export default defineComponent({
     TermsDiffView,
   },
   props: {
-    termId: {
-      type: Number,
-      default: null,
+    termType: {
+      type: String,
+      required: true,
     },
   },
   emits: ["save-success", "back"],
@@ -219,28 +203,34 @@ export default defineComponent({
     const loading = ref(false);
     const editorMode = ref("edit");
     const diffLoading = ref(false);
-    const previousVersion = ref<any>(null);
-
+    const previousTerms = ref<TermsResponse | null>(null);
+    const nextVersion = computed(() => {
+      return termData.value.version ? termData.value.version + 0.1 : 1.0;
+    });
     // 폼 데이터
-    const termData = ref({
+    const termData = ref<TermsResponse>({
+      id: 0,
       title: "",
       type: "",
-      version: "",
+      version: 1.0,
       content: "",
-      description: "",
-      effectiveDate: new Date().toISOString().split("T")[0],
+      revisionNote: "",
       isRequired: false,
-      isActive: true,
+      createdAt: "",
     });
 
     onMounted(() => {
-      if (props.termId) {
+      if (props.termType) {
         fetchTermDetail();
       }
     });
 
     watch(editorMode, async (newMode) => {
-      if (newMode === "diff" && !previousVersion.value) {
+      if (
+        newMode === "diff" &&
+        !previousTerms.value &&
+        termData.value.version > 1.0
+      ) {
         await fetchPreviousVersion();
       }
     });
@@ -279,33 +269,24 @@ export default defineComponent({
       },
     };
 
-    // 버전 히스토리 데이터
     const versionHistory = ref([
       {
-        version: "1.0.0",
+        version: 1.0,
         date: "2024-01-01",
         description: "최초 약관 등록",
       },
       {
-        version: "1.1.0",
+        version: 1.1,
         date: "2024-02-01",
         description: "개인정보 처리 항목 추가",
       },
       {
-        version: "1.2.0",
+        version: 1.2,
         date: "2024-03-01",
         description: "서비스 이용 제한 조건 변경",
       },
     ]);
 
-    // computed 속성
-    const effectiveDateText = computed(() => {
-      return termData.value.effectiveDate
-        ? formatStringDate(termData.value.effectiveDate)
-        : "";
-    });
-
-    // 메서드
     const onEditorTextChange = () => {
       if (form.value) {
         form.value.validate();
@@ -313,13 +294,15 @@ export default defineComponent({
     };
 
     const fetchTermDetail = async () => {
-      if (!props.termId) return;
+      if (!props.termType) return;
 
       loading.value = true;
       try {
-        // API 호출 로직
-        // const response = await request(`/v1/terms/${props.termId}`);
-        // termData.value = response.data;
+        termData.value = (
+          await request<BaseResponse<TermsResponse>>(
+            `/v1/terms/${props.termType}`
+          )
+        ).data;
       } catch (e) {
         console.error("약관 상세 정보를 불러오는데 실패했습니다:", e);
       } finally {
@@ -328,13 +311,15 @@ export default defineComponent({
     };
 
     const fetchPreviousVersion = async () => {
-      if (!props.termId) return;
+      if (!props.termType) return;
 
       diffLoading.value = true;
       try {
-        // API 호출 로직
-        // const response = await request(`/v1/terms/${props.termId}/previous`);
-        // previousVersion.value = response.data;
+        previousTerms.value = (
+          await request<BaseResponse<TermsResponse>>(
+            `/v1/terms/${props.termType}/revisions/${termData.value.version}`
+          )
+        ).data;
       } catch (e) {
         console.error("이전 버전 정보를 불러오는데 실패했습니다:", e);
       } finally {
@@ -368,13 +353,13 @@ export default defineComponent({
       termData,
       termTypes,
       versionHistory,
-      effectiveDateText,
       editorOptions,
       toolbarOptions,
       onEditorTextChange,
       handleSubmit,
       diffLoading,
-      previousVersion,
+      previousVersion: previousTerms,
+      nextVersion,
     };
   },
 });

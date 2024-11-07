@@ -21,6 +21,12 @@
           @update:items-per-page="onItemsPerPageChange"
           class="elevation-1"
         >
+          <template v-slot:[`item.createdAt`]="{ item }">
+            {{ formatStringDate(item.createdAt) }}
+          </template>
+          <template v-slot:[`item.isRequired`]="{ item }">
+            {{ item.isRequired ? "필수" : "선택" }}
+          </template>
           <template v-slot:[`item.actions`]="{ item }">
             <v-btn
               small
@@ -44,11 +50,11 @@
               <v-icon>mdi-arrow-left</v-icon>
             </v-btn>
             <v-toolbar-title>
-              {{ selectedTermId ? "약관 상세 정보" : "새 약관 등록" }}
+              {{ selectedTermType ? "약관 상세 정보" : "새 약관 등록" }}
             </v-toolbar-title>
           </v-toolbar>
           <term-detail-view
-            :term-id="selectedTermId"
+            :term-type="selectedTermType"
             @save-success="handleSaveSuccess"
             @back="backToList"
           ></term-detail-view>
@@ -88,7 +94,7 @@ export default defineComponent({
   },
   setup() {
     const showList = ref(true);
-    const selectedTermId = ref<number | null>(null);
+    const selectedTermType = ref<string | null>(null);
     const terms = ref<TermsResponse[]>([]);
     const loading = ref(false);
     const currentPage = ref(1);
@@ -123,7 +129,7 @@ export default defineComponent({
       { title: "약관 제목", key: "title" },
       { title: "버전", key: "version" },
       { title: "등록일", key: "createdAt" },
-      { title: "필수여부", key: "isMandatory" },
+      { title: "필수여부", key: "isRequired" },
       { title: "관리", key: "actions", sortable: false },
     ];
 
@@ -149,13 +155,13 @@ export default defineComponent({
       }
     };
 
-    const showTermDetail = (termId: number) => {
-      selectedTermId.value = termId;
+    const showTermDetail = (termType: string) => {
+      selectedTermType.value = termType;
       showList.value = false;
     };
 
     const showTermCreate = () => {
-      selectedTermId.value = null;
+      selectedTermType.value = null;
       showList.value = false;
     };
 
@@ -173,7 +179,7 @@ export default defineComponent({
       headers,
       searchFields,
       termTypes,
-      selectedTermId,
+      selectedTermType: selectedTermType,
       currentPage,
       itemsPerPage,
       dateMenu,
@@ -185,7 +191,7 @@ export default defineComponent({
       handleSaveSuccess,
       backToList: () => {
         showList.value = true;
-        selectedTermId.value = null;
+        selectedTermType.value = null;
       },
       handleSearch: fetchTerms,
       formatStringDate,

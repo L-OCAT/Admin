@@ -4,8 +4,8 @@
       버전 변경사항 비교
       <v-spacer></v-spacer>
       <div class="text-caption">
-        {{ formatDate(previousTerms.updatedAt) }} →
-        {{ formatDate(currentTerms.updatedAt) }}
+        {{ formatDate(previousTerms.createdAt) }} →
+        {{ formatDate(currentTerms.createdAt) }}
       </div>
     </v-card-title>
 
@@ -55,7 +55,7 @@ import { diffLines } from "diff";
 import { formatDate } from "@/utils/date-formatter";
 
 export default defineComponent({
-  name: "TermsDiffViewer",
+  name: "TermsDiffView",
   props: {
     previousTerms: {
       type: Object,
