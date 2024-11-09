@@ -49,27 +49,24 @@
               >
                 <v-btn value="edit">
                   <v-icon>mdi-pencil</v-icon>
-                  수정
-                </v-btn>
-                <v-btn value="preview">
-                  <v-icon>mdi-eye</v-icon>
-                  미리보기
+                  편집
                 </v-btn>
                 <v-btn value="html">
                   <v-icon>mdi-code-tags</v-icon>
                   HTML
                 </v-btn>
-                <v-btn v-if="termData.version > 1.0" value="diff">
-                  <v-icon>mdi-compare</v-icon>
-                  차이점
-                </v-btn>
+                <!--                <v-btn v-if="termData.version > 1.0" value="diff">-->
+                <!--                  <v-icon>mdi-compare</v-icon>-->
+                <!--                  차이점-->
+                <!--                </v-btn>-->
               </v-btn-toggle>
             </v-card-title>
             <v-card-text>
               <div v-if="editorMode === 'edit'">
                 <div ref="editorContainer" class="editor-container">
                   <QuillEditor
-                    v-model:content="termData.content"
+                    :content="termData.content"
+                    @update:content="updateContent"
                     contentType="html"
                     :options="editorOptions"
                     :toolbar="toolbarOptions"
@@ -79,14 +76,8 @@
                 </div>
               </div>
 
-              <div
-                v-else-if="editorMode === 'preview'"
-                class="terms-preview pa-4"
-                v-html="termData.content"
-              ></div>
-
               <div v-else-if="editorMode === 'html'" class="html-preview pa-4">
-                <pre><code>{{ termData.content }}</code></pre>
+                <pre><code>{{ sanitizedContent }}</code></pre>
               </div>
 
               <div v-else-if="editorMode === 'diff'" class="diff-preview pa-4">
@@ -96,7 +87,11 @@
                   :current-terms="termData"
                   :loading="diffLoading"
                 />
-                <v-alert v-else type="info" text="No previous verion Found!" />
+                <v-alert
+                  v-else
+                  type="info"
+                  text="이전 버전을 불러오지 못했어요."
+                />
               </div>
             </v-card-text>
           </v-card>
@@ -107,7 +102,7 @@
         <v-col cols="12">
           <v-textarea
             v-model="termData.revisionNote"
-            label="변경 사유"
+            label="개정 사유"
             rows="3"
             placeholder="약관이 변경된 이유나 주요 변경사항을 입력하세요"
             no-resize
@@ -132,7 +127,7 @@
                   >
                     <template v-slot:opposite>
                       <div class="text-caption">
-                        {{ formatStringDate(history.date) }}
+                        {{ formatStringDate(history.createdAt) }}
                       </div>
                     </template>
                     <v-card class="elevation-1">
@@ -140,7 +135,7 @@
                         Version {{ history.version }}
                       </v-card-title>
                       <v-card-text>
-                        {{ history.description }}
+                        {{ history.revisionNote }}
                       </v-card-text>
                     </v-card>
                   </v-timeline-item>
@@ -171,6 +166,12 @@
       </v-btn>
     </v-card-actions>
   </v-form>
+  <v-snackbar v-model="show" :color="color" :timeout="3000">
+    {{ message }}
+    <template v-slot:action="{ attrs }">
+      <v-btn text="" v-bind="attrs" @click="show = false">닫기</v-btn>
+    </template>
+  </v-snackbar>
 </template>
 
 <script lang="ts">
@@ -181,7 +182,10 @@ import { formatStringDate } from "@/utils/date-formatter";
 import TermsDiffView from "@/components/terms/TermsDiffView.vue";
 import { request } from "@/utils/request-client";
 import { BaseResponse } from "@/types/common/response";
-import { TermsResponse } from "@/types/terms";
+import { TermsResponse, TermsRevisionResponse } from "@/types/terms";
+import { VForm } from "vuetify/components";
+import DOMPurify from "dompurify";
+import { useSnackbar } from "@/hook/snackbar";
 
 export default defineComponent({
   name: "TermDetailView",
@@ -192,13 +196,15 @@ export default defineComponent({
   },
   props: {
     termType: {
-      type: String,
+      type: String as () => string | null,
       required: true,
     },
   },
   emits: ["save-success", "back"],
   setup(props, { emit }) {
-    const form = ref<any>(null);
+    const form = ref<InstanceType<typeof VForm>>(
+      {} as InstanceType<typeof VForm>
+    );
     const isValid = ref(false);
     const loading = ref(false);
     const editorMode = ref("edit");
@@ -207,7 +213,6 @@ export default defineComponent({
     const nextVersion = computed(() => {
       return termData.value.version ? termData.value.version + 0.1 : 1.0;
     });
-    // 폼 데이터
     const termData = ref<TermsResponse>({
       id: 0,
       title: "",
@@ -218,10 +223,13 @@ export default defineComponent({
       isRequired: false,
       createdAt: "",
     });
+    const revisionHistory = ref<TermsRevisionResponse[]>([]);
+    const { show, message, color, showMessage } = useSnackbar();
 
     onMounted(() => {
       if (props.termType) {
         fetchTermDetail();
+        fetchTermRevisionHistory();
       }
     });
 
@@ -248,7 +256,6 @@ export default defineComponent({
       },
     ];
 
-    // 에디터 설정
     const toolbarOptions = [
       ["bold", "italic", "underline", "strike"],
       [{ header: [1, 2, 3, 4, 5, 6, false] }],
@@ -263,29 +270,27 @@ export default defineComponent({
     ];
 
     const editorOptions = {
-      placeholder: "약관 내용을 입력하세요...",
+      placeholder: "약관 내용을 입력하세요.",
+      readOnly: false,
       modules: {
         toolbar: toolbarOptions,
+        history: {
+          delay: 2000,
+          maxStack: 500,
+          userOnly: true,
+        },
       },
     };
 
-    const versionHistory = ref([
-      {
-        version: 1.0,
-        date: "2024-01-01",
-        description: "최초 약관 등록",
-      },
-      {
-        version: 1.1,
-        date: "2024-02-01",
-        description: "개인정보 처리 항목 추가",
-      },
-      {
-        version: 1.2,
-        date: "2024-03-01",
-        description: "서비스 이용 제한 조건 변경",
-      },
-    ]);
+    const sanitizedContent = computed(() => {
+      return termData.value.content
+        ? DOMPurify.sanitize(termData.value.content)
+        : "";
+    });
+
+    const updateContent = (newContent: string) => {
+      termData.value.content = newContent;
+    };
 
     const onEditorTextChange = () => {
       if (form.value) {
@@ -304,9 +309,23 @@ export default defineComponent({
           )
         ).data;
       } catch (e) {
-        console.error("약관 상세 정보를 불러오는데 실패했습니다:", e);
+        showMessage("약관 상세 정보를 불러오지 못했어요.");
       } finally {
         loading.value = false;
+      }
+    };
+
+    const fetchTermRevisionHistory = async () => {
+      if (!props.termType) return;
+
+      try {
+        revisionHistory.value = (
+          await request<BaseResponse<TermsRevisionResponse[]>>(
+            `/v1/terms/${props.termType}/revisions`
+          )
+        ).data;
+      } catch (e) {
+        showMessage("약관 변경 이력을 불러오지 못했어요.");
       }
     };
 
@@ -321,7 +340,7 @@ export default defineComponent({
           )
         ).data;
       } catch (e) {
-        console.error("이전 버전 정보를 불러오는데 실패했습니다:", e);
+        showMessage("이전 버전 정보를 불러오지 못했어요.");
       } finally {
         diffLoading.value = false;
       }
@@ -329,17 +348,30 @@ export default defineComponent({
 
     const handleSubmit = async () => {
       if (!form.value.validate()) return;
+      if (!termData.value.revisionNote) {
+        showMessage("개정 사유를 입력해주세요.");
+        return;
+      }
 
       loading.value = true;
       try {
-        // API 호출 로직
-        // const response = await request('/v1/terms', {
-        //   method: props.termId ? 'PUT' : 'POST',
-        //   data: termData.value,
-        // });
-        emit("save-success");
+        request<never>("/v1/terms", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          data: JSON.stringify({
+            type: props.termType,
+            isRequired: termData.value.isRequired,
+            title: termData.value.title,
+            content: termData.value.content,
+            revisionNote: termData.value.revisionNote,
+          }),
+        }).then(() => {
+          emit("save-success");
+        });
       } catch (e) {
-        console.error("약관 저장에 실패했습니다:", e);
+        showMessage("약관 저장에 실패했어요.");
       } finally {
         loading.value = false;
       }
@@ -352,14 +384,20 @@ export default defineComponent({
       editorMode,
       termData,
       termTypes,
-      versionHistory,
+      versionHistory: revisionHistory,
       editorOptions,
       toolbarOptions,
+      sanitizedContent,
+      updateContent,
       onEditorTextChange,
       handleSubmit,
       diffLoading,
       previousVersion: previousTerms,
       nextVersion,
+      show,
+      message,
+      color,
+      showMessage,
     };
   },
 });
@@ -390,16 +428,6 @@ export default defineComponent({
   border: 1px solid #ddd;
   border-bottom-left-radius: 4px;
   border-bottom-right-radius: 4px;
-}
-
-.terms-preview {
-  min-height: 500px;
-  max-height: 500px;
-  overflow-y: auto;
-  background-color: #f5f5f5;
-  border-radius: 4px;
-  padding: 20px;
-  font-size: 14px;
 }
 
 .html-preview {

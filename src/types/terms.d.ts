@@ -8,3 +8,9 @@ export interface TermsResponse {
   revisionNote?: string | null;
   createdAt: string;
 }
+
+export interface TermsRevisionResponse {
+  version: number;
+  revisionNote: string;
+  createdAt: string;
+}

@@ -149,7 +149,7 @@ export default defineComponent({
           await request<BaseResponse<TermsResponse[]>>("/v1/terms")
         ).data;
       } catch (e) {
-        showMessage("약관 정보를 불러오지 못했습니다.");
+        showMessage("약관 정보를 불러오지 못했어요.");
       } finally {
         loading.value = false;
       }

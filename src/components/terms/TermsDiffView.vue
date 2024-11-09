@@ -22,36 +22,57 @@
       <v-skeleton-loader v-if="loading" type="article"></v-skeleton-loader>
 
       <div v-else class="diff-container">
-        <div v-for="(diff, index) in diffs" :key="index" class="diff-line">
-          <template v-if="diff.added">
-            <div class="diff-content added">
-              <v-icon size="small" color="success" class="mr-2"
-                >mdi-plus</v-icon
-              >
-              <span>{{ diff.value }}</span>
-            </div>
-          </template>
-          <template v-else-if="diff.removed">
-            <div class="diff-content removed">
-              <v-icon size="small" color="error" class="mr-2">mdi-minus</v-icon>
-              <span>{{ diff.value }}</span>
-            </div>
-          </template>
-          <template v-else>
-            <div class="diff-content unchanged">
-              <span class="mr-8"></span>
-              {{ diff.value }}
-            </div>
-          </template>
-        </div>
+        <!-- HTML 모드와 텍스트 모드 전환 -->
+        <v-btn-toggle v-model="diffMode" mandatory class="mb-4">
+          <v-btn value="text" small>텍스트 비교</v-btn>
+          <v-btn value="html" small>HTML 비교</v-btn>
+        </v-btn-toggle>
+
+        <!-- 텍스트 모드 -->
+        <template v-if="diffMode === 'text'">
+          <div
+            v-for="(diff, index) in textDiffs"
+            :key="'text-' + index"
+            class="diff-line"
+          >
+            <template v-if="diff.added">
+              <div class="diff-content added">
+                <v-icon size="small" color="success" class="mr-2"
+                  >mdi-plus</v-icon
+                >
+                <span>{{ diff.value }}</span>
+              </div>
+            </template>
+            <template v-else-if="diff.removed">
+              <div class="diff-content removed">
+                <v-icon size="small" color="error" class="mr-2"
+                  >mdi-minus</v-icon
+                >
+                <span>{{ diff.value }}</span>
+              </div>
+            </template>
+            <template v-else>
+              <div class="diff-content unchanged">
+                <span class="mr-8"></span>
+                {{ diff.value }}
+              </div>
+            </template>
+          </div>
+        </template>
+
+        <!-- HTML 모드 -->
+        <template v-else>
+          <div v-html="htmlDiff" class="html-diff-content"></div>
+        </template>
       </div>
     </v-card-text>
   </v-card>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from "vue";
+import { computed, defineComponent, ref } from "vue";
 import { diffLines } from "diff";
+import * as DiffMatchPatch from "diff-match-patch";
 import { formatDate } from "@/utils/date-formatter";
 
 export default defineComponent({
@@ -71,12 +92,45 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const diffs = computed(() => {
+    const diffMode = ref("text");
+    const dmp = new DiffMatchPatch.diff_match_patch();
+
+    const textDiffs = computed(() => {
       return diffLines(props.previousTerms.content, props.currentTerms.content);
     });
 
+    const htmlDiff = computed(() => {
+      const diffs = dmp.diff_main(
+        props.previousTerms.content,
+        props.currentTerms.content
+      );
+      dmp.diff_cleanupSemantic(diffs);
+
+      return diffs
+        .map(([type, text]) => {
+          const escapedText = text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+
+          switch (type) {
+            case 1: // 추가됨
+              return `<div class="diff-content added"><span class="diff-marker">+</span>${escapedText}</div>`;
+            case -1: // 삭제됨
+              return `<div class="diff-content removed"><span class="diff-marker">-</span>${escapedText}</div>`;
+            default: // 변경없음
+              return `<div class="diff-content unchanged"><span class="diff-marker"> </span>${escapedText}</div>`;
+          }
+        })
+        .join("");
+    });
+
     return {
-      diffs,
+      diffMode,
+      textDiffs,
+      htmlDiff,
       formatDate,
     };
   },
@@ -115,5 +169,17 @@ export default defineComponent({
 
 .diff-content.unchanged {
   background-color: transparent;
+}
+
+/* HTML diff 관련 스타일 */
+:deep(.diff-marker) {
+  display: inline-block;
+  width: 20px;
+  color: #666;
+  font-weight: bold;
+}
+
+.html-diff-content {
+  white-space: pre-wrap;
 }
 </style>
