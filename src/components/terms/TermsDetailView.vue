@@ -22,7 +22,7 @@
           ></v-select>
         </v-col>
         <v-col cols="3">
-          <v-text-field v-model="nextVersion" readonly></v-text-field>
+          <v-text-field v-model="termData.version" readonly></v-text-field>
         </v-col>
       </v-row>
       <v-row>
@@ -125,17 +125,14 @@
                     "
                     size="small"
                   >
-                    <template v-slot:opposite>
-                      <div class="text-caption">
-                        {{ formatStringDate(history.createdAt) }}
-                      </div>
-                    </template>
                     <v-card class="elevation-1">
                       <v-card-title class="text-subtitle-1">
-                        Version {{ history.version }}
+                        버전 {{ history.version }} ({{
+                          formatStringDate(history.createdAt)
+                        }})
                       </v-card-title>
                       <v-card-text>
-                        {{ history.revisionNote }}
+                        개정 사유: {{ history.revisionNote }}
                       </v-card-text>
                     </v-card>
                   </v-timeline-item>
@@ -210,9 +207,6 @@ export default defineComponent({
     const editorMode = ref("edit");
     const diffLoading = ref(false);
     const previousTerms = ref<TermsResponse | null>(null);
-    const nextVersion = computed(() => {
-      return termData.value.version ? termData.value.version + 0.1 : 1.0;
-    });
     const termData = ref<TermsResponse>({
       id: 0,
       title: "",
@@ -393,7 +387,6 @@ export default defineComponent({
       handleSubmit,
       diffLoading,
       previousVersion: previousTerms,
-      nextVersion,
       show,
       message,
       color,
@@ -448,7 +441,6 @@ export default defineComponent({
   word-break: break-all;
 }
 
-/* Diff 뷰어 스타일 */
 .diff-preview {
   background-color: #f5f5f5;
   border-radius: 4px;
