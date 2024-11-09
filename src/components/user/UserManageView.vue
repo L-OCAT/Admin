@@ -42,7 +42,7 @@
                   <template v-slot:activator="{ props }">
                     <v-text-field
                       v-model="dateRangeText"
-                      label="검색 기간 선택"
+                      label="가입일로 검색"
                       prepend-inner-icon="mdi-calendar"
                       readonly
                       v-bind="props"

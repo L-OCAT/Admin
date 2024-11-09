@@ -13,7 +13,11 @@ export async function request<T>(
   url: string,
   options?: AxiosRequestConfig
 ): Promise<T> {
-  const response: AxiosResponse<T> = await axiosInstance(url, options);
+  const cleanedOptions = {
+    ...options,
+    params: options?.params ? cleanEmptyQueryParams(options.params) : undefined,
+  };
+  const response: AxiosResponse<T> = await axiosInstance(url, cleanedOptions);
   return response.data;
 }
 
@@ -25,3 +29,11 @@ axiosInstance.interceptors.request.use((config) => {
   config.headers["Locat-Api-Key"] = PUBLIC_API_KEY;
   return config;
 });
+
+const cleanEmptyQueryParams = (obj: Record<string, unknown>) => {
+  return Object.entries(obj)
+    .filter(
+      ([, value]) => value !== undefined && value !== null && value !== ""
+    )
+    .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
+};
