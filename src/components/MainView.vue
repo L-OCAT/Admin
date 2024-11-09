@@ -113,43 +113,31 @@ export default defineComponent({
     UserManageView: defineAsyncComponent(
       () => import("@/components/user/UserManageView.vue")
     ),
+    TermsManageView: defineAsyncComponent(
+      () => import("@/components/terms/TermsManageView.vue")
+    ),
     ServerManageView: defineAsyncComponent(
       () => import("@/components/server/ServerManageView.vue")
     ),
   },
+
   setup() {
     const appTheme = useAppTheme();
-    const appVersion = APP_VERSION;
-    const buildDate = BUILD_DATE;
-    const isPreRelease = computed(() => {
-      const version = APP_VERSION.toLowerCase();
-      return (
-        version.includes("alpha") ||
-        version.includes("beta") ||
-        version.includes("rc") ||
-        version.includes("dev")
-      );
-    });
     const currentView = ref("DashboardView");
     const username = ref("");
     const userRole = ref("");
     const currentTime = ref("");
-
-    onMounted(() => {
-      appTheme.init();
-      updateTime();
-      timer = setInterval(updateTime, 1000);
-      const accessToken = localStorage.getItem("accessToken");
-      if (accessToken) {
-        const userDetails = parseJwt(accessToken);
-        username.value = `${userDetails.name}(${userDetails.sub})`;
-        userRole.value = userDetails.auth;
-      }
-    });
+    let timer: number;
 
     const menuItems = [
       { title: "대시보드", icon: "mdi-view-dashboard", view: "DashboardView" },
       { title: "사용자 관리", icon: "mdi-account", view: "UserManageView" },
+      // { title: "게시글 관리", icon: "mdi-text-box", view: "" },
+      {
+        title: "약관 관리",
+        icon: "mdi-file-cog-outline",
+        view: "TermsManageView",
+      },
       {
         title: "서버 상태 관리",
         icon: "mdi-heart-pulse",
@@ -162,27 +150,48 @@ export default defineComponent({
       currentTime.value = now.toLocaleString("ko-KR");
     };
 
-    let timer: number;
-
     const logout = () => {
-      // TODO: Link revoke API
       invalidateToken();
       document.location.href = "/";
     };
 
+    onMounted(() => {
+      appTheme.init();
+      updateTime();
+      timer = setInterval(updateTime, 1000);
+
+      const accessToken = localStorage.getItem("accessToken");
+      if (accessToken) {
+        const userDetails = parseJwt(accessToken);
+        username.value = `${userDetails.name}(${userDetails.sub})`;
+        userRole.value = userDetails.auth;
+      }
+    });
+
     onUnmounted(() => {
       clearInterval(timer);
     });
+
+    const isPreRelease = computed(() => {
+      const version = APP_VERSION.toLowerCase();
+      return (
+        version.includes("alpha") ||
+        version.includes("beta") ||
+        version.includes("rc") ||
+        version.includes("dev")
+      );
+    });
+
     return {
-      appVersion,
-      buildDate,
+      appVersion: APP_VERSION,
+      buildDate: BUILD_DATE,
       isPreRelease,
       isDarkMode: computed(() => appTheme.isDarkMode),
       toggleDarkMode: () => appTheme.toggle(),
       currentView,
+      menuItems,
       username,
       currentTime,
-      menuItems,
       logout,
     };
   },
