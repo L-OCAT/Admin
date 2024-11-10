@@ -7,4 +7,6 @@ export interface IEnvironment {
   readonly API_PUBLIC_KEY: string;
   readonly KAKAO_KEY: string;
   readonly KAKAO_REDIRECT_URI: string;
+  readonly APPLE_CLIENT_ID: string;
+  readonly APPLE_REDIRECT_URI: string;
 }
