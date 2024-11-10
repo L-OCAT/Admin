@@ -16,6 +16,12 @@
         @click="loginWithKakao"
         style="cursor: pointer"
       />
+      <div
+        id="appleid-signin"
+        data-color="black"
+        data-border="true"
+        data-type="sign in"
+      ></div>
     </div>
     <v-alert type="error" v-if="errorMessage" dense text="">
       {{ errorMessage }}
@@ -23,17 +29,23 @@
   </v-card>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref } from "vue";
+<script>
+import { defineComponent, onMounted, ref } from "vue";
 import { getProperty } from "@/utils/environment";
 
 const KAKAO_REDIRECT_URI = getProperty("KAKAO_REDIRECT_URI");
+const APPLE_REDIRECT_URI = getProperty("APPLE_REDIRECT_URI");
+const APPLE_CLIENT_ID = getProperty("APPLE_CLIENT_ID");
 
 export default defineComponent({
   name: "SocialLoginView",
   emits: ["update:view"],
   setup() {
     const errorMessage = ref("");
+
+    onMounted(() => {
+      initializeAppleSignIn();
+    });
 
     const loginWithKakao = async () => {
       try {
@@ -46,17 +58,24 @@ export default defineComponent({
       }
     };
 
-    const loginWithApple = async () => {
-      try {
-        alert("준비 중입니다.");
-      } catch (error) {
-        errorMessage.value = "Apple 로그인 중 오류가 발생했습니다.";
-      }
+    const initializeAppleSignIn = () => {
+      const script = document.createElement("script");
+      script.src =
+        "https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js";
+      script.async = true;
+      script.onload = () => {
+        window.AppleID?.auth.init({
+          clientId: APPLE_CLIENT_ID,
+          scope: "name email",
+          redirectURI: APPLE_REDIRECT_URI,
+          state: "state",
+          usePopup: true,
+        });
+      };
+      document.head.appendChild(script);
     };
-
     return {
       loginWithKakao,
-      loginWithApple,
       errorMessage,
     };
   },
@@ -89,5 +108,11 @@ h1 {
 .v-btn:last-child {
   background-color: #ffffff;
   border: 1px solid #000000;
+}
+
+#appleid-signin {
+  width: 222px !important;
+  height: 54px !important;
+  margin: 12px auto 0;
 }
 </style>
