@@ -68,7 +68,7 @@ export default defineComponent({
           clientId: APPLE_CLIENT_ID,
           scope: "name email",
           redirectURI: APPLE_REDIRECT_URI,
-          state: "state",
+          responseMode: "form_post",
           usePopup: true,
         });
       };
