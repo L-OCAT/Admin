@@ -8,19 +8,24 @@
     <h1 class="text-center mb-6" style="font-weight: bold; font-size: 24px">
       LOCAT Admin Console
     </h1>
-    <div class="text-center mb-4">
+    <div class="text-center mb-4 d-flex flex-column align-center">
       <img
-        src="https://k.kakaocdn.net/14/dn/btroDszwNrM/I6efHub1SN5KCJqLm1Ovx1/o.jpg"
-        width="222"
+        src="/images/kakao_login_medium_narrow.png"
+        width="183"
+        height="45"
         alt="카카오 로그인 버튼"
         @click="loginWithKakao"
-        style="cursor: pointer"
+        style="cursor: pointer; margin-bottom: 16px"
       />
       <div
         id="appleid-signin"
+        data-mode="center-align"
+        data-type="sign-up"
         data-color="black"
-        data-border="true"
-        data-type="sign in"
+        data-border="false"
+        data-border-radius="15"
+        data-width="183"
+        data-height="45"
       ></div>
     </div>
     <v-alert type="error" v-if="errorMessage" dense text="">
@@ -61,19 +66,24 @@ export default defineComponent({
     const initializeAppleSignIn = () => {
       const script = document.createElement("script");
       script.src =
-        "https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js";
+        "https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/ko_KR/appleid.auth.js";
       script.async = true;
       script.onload = () => {
         window.AppleID?.auth.init({
           clientId: APPLE_CLIENT_ID,
-          scope: "name email",
           redirectURI: APPLE_REDIRECT_URI,
           responseMode: "form_post",
-          usePopup: true,
+          nonce: generateRandomState(),
+          usePopup: false,
         });
       };
       document.head.appendChild(script);
     };
+
+    const generateRandomState = () => {
+      return Math.random().toString(36).substring(2, 15);
+    };
+
     return {
       loginWithKakao,
       errorMessage,
@@ -108,11 +118,5 @@ h1 {
 .v-btn:last-child {
   background-color: #ffffff;
   border: 1px solid #000000;
-}
-
-#appleid-signin {
-  width: 222px !important;
-  height: 54px !important;
-  margin: 12px auto 0;
 }
 </style>
