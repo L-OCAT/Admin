@@ -30,7 +30,6 @@
                   v-model="mainCategory"
                   :items="mainCategories"
                   label="카테고리 대분류"
-                  prepend-inner-icon="mdi-menu-down"
                   outlined
                 ></v-select>
               </v-col>
@@ -38,19 +37,18 @@
                 <v-select
                   v-model="subCategory"
                   :items="subCategories"
-                  prepend-inner-icon="mdi-menu-down"
                   label="카테고리 소분류"
                   outlined
                 ></v-select>
               </v-col>
             </v-row>
             <v-row class="mt-0 mb-0 align-center">
-              <v-col cols="12" sm="6" md="3">
+              <v-col cols="3">
                 <v-menu
                   v-model="dateMenu"
                   :close-on-content-click="false"
                   offset-y
-                  min-width="auto"
+                  min-width="290px"
                 >
                   <template #activator="{ props }">
                     <v-text-field
@@ -59,19 +57,46 @@
                       prepend-inner-icon="mdi-calendar"
                       readonly
                       v-bind="props"
-                      outlined
                       height="48"
                     ></v-text-field>
                   </template>
-                  <v-date-picker
-                    v-model="dateRange"
-                    range
-                    no-title
-                    color="#ff5f2c"
-                    @update:model-value="handleDateSelect"
-                    locale="ko-KR"
-                  ></v-date-picker>
+                  <v-card>
+                    <v-card-text>
+                      <v-row>
+                        <v-col cols="8">
+                          <v-date-picker
+                            v-model="dateRange"
+                            range
+                            no-title
+                            multiple
+                            color="#ff5f2c"
+                            @update:model-value="handleDateSelect"
+                            locale="ko-KR"
+                            class="elevation-0"
+                          >
+                          </v-date-picker>
+                        </v-col>
+                      </v-row>
+                    </v-card-text>
+                  </v-card>
                 </v-menu>
+              </v-col>
+              <v-col cols="5" class="d-flex align-center">
+                <v-btn variant="outlined" class="mx-2" @click="setDatePreset(7)"
+                  >1주일</v-btn
+                >
+                <v-btn
+                  variant="outlined"
+                  class="mx-2"
+                  @click="setDatePreset(30)"
+                  >1개월</v-btn
+                >
+                <v-btn
+                  variant="outlined"
+                  class="mx-2"
+                  @click="setDatePreset(90)"
+                  >3개월</v-btn
+                >
               </v-col>
             </v-row>
             <v-row class="mt-0 align-center">
@@ -140,7 +165,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed } from "vue";
+import { defineComponent, ref, computed, watch } from "vue";
 import { Item } from "@/types/item/item";
 import { formatDate } from "@/utils/date-formatter";
 import { PageResponse } from "@/types/common/response";
@@ -155,7 +180,7 @@ export default defineComponent({
     const itemStatus = ref("all");
     const mainCategory = ref("");
     const subCategory = ref("");
-    const dateRange = ref<string[]>([]);
+    const dateRange = ref<Date[]>([]);
     const dateMenu = ref(false);
     const city = ref("");
     const district = ref("");
@@ -167,7 +192,7 @@ export default defineComponent({
     const showList = ref(true);
     const selectedItemId = ref<number | null>(null);
 
-    const mainCategories = ref(["카테고리1", "카테고리2", "카테고리3"]);
+    const mainCategories = ref(["대분류1", "대분류2", "대분류3"]);
     const subCategories = ref(["소분류1", "소분류2", "소분류3"]);
     const cities = ref(["서울", "부산", "대구"]);
     const districts = ref(["강남구", "서초구", "동작구"]);
@@ -182,6 +207,61 @@ export default defineComponent({
       { text: "상세", value: "actions", sortable: false },
     ];
 
+    // const updateDateRange = (dates: (Date | null)[]) => {
+    //   dateRange.value = dates; // dateRange에 새로운 날짜 값 할당
+    //   dateMenu.value = false;
+    // };
+
+    const dateRangeText = computed(() => {
+      if (dateRange.value?.length > 0) {
+        if (dateRange.value.length === 1) {
+          return formatDate(dateRange.value[0]);
+        } else if (dateRange.value.length === 2) {
+          return `${formatDate(dateRange.value[0])} ~ ${formatDate(
+            dateRange.value[1]
+          )}`;
+        }
+      }
+      return "";
+    });
+
+    const handleDateSelect = (dates: Date[]) => {
+      if (dates.length > 2) {
+        dateRange.value = dates.slice(1, 3); // 마지막에 선택한 두 개만 유지
+      } else {
+        dateRange.value = dates;
+      }
+
+      // 두 날짜가 모두 선택되면 메뉴를 닫음
+      if (dateRange.value.length === 2) {
+        dateMenu.value = false;
+      }
+    };
+
+    const setDatePreset = (days: number) => {
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+
+      dateRange.value = [startDate, endDate];
+    };
+
+    const formatDate = (date: Date | null) => {
+      return date
+        ? new Date(date).toISOString().slice(0, 10).replace(/-/g, ".")
+        : "";
+    };
+
+    // const fetchMainCategories = async () => {
+    //   try {
+    //     const response = await request.get("/v1/categories");
+    //     mainCategories.value = response.data.data.filter(
+    //       category => category.parentId == null
+    //     );
+    //   } catch (error) {
+    //     console.error("Fail to fetch main categories.", error);
+    //   }
+    // };
     const fetchItems = async () => {
       loading.value = true;
       const params = {
@@ -193,8 +273,12 @@ export default defineComponent({
         itemStatus: itemStatus.value,
         city: city.value,
         district: district.value,
-        startDate: dateRange.value[0],
-        endDate: dateRange.value[1],
+        startDate: dateRange.value[0]
+          ? formatDate(dateRange.value[0])
+          : undefined,
+        endDate: dateRange.value[1]
+          ? formatDate(dateRange.value[1])
+          : undefined,
       };
 
       try {
@@ -215,23 +299,16 @@ export default defineComponent({
       fetchItems();
     };
 
-    const dateRangeText = computed(() => {
-      if (dateRange.value?.length) {
-        return dateRange.value.length === 1
-          ? formatDate(dateRange.value[0])
-          : `${formatDate(dateRange.value[0])} ~ ${formatDate(
-              dateRange.value[1]
-            )}`;
-      }
-      return "";
-    });
-
-    const handleDateSelect = (dates: string[]) => {
-      dateRange.value = dates;
-      if (dates.length === 2) {
-        dateMenu.value = false;
-      }
-    };
+    // const dateRangeText = computed(() => {
+    //   if (dateRange.value?.length) {
+    //     return dateRange.value.length === 1
+    //       ? formatDate(dateRange.value[0])
+    //       : `${formatDate(dateRange.value[0])} ~ ${formatDate(
+    //           dateRange.value[1]
+    //         )}`;
+    //   }
+    //   return "";
+    // });
 
     const onPageChange = (page: number) => {
       currentPage.value = page;
@@ -268,12 +345,14 @@ export default defineComponent({
       items,
       handleSearch,
       dateRangeText,
-      handleDateSelect,
+      // updateDateRange,
       onPageChange,
       onItemsPerPageChange,
       showList,
       showItemDetail,
       selectedItemId,
+      setDatePreset,
+      handleDateSelect,
     };
   },
 });
