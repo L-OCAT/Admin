@@ -1,4 +1,4 @@
-export interface CategoryInfoResponse {
+export interface Category {
   readonly id: number;
   readonly name: string;
   readonly parentId: number | null;

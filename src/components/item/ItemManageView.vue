@@ -81,7 +81,11 @@
                   </v-card>
                 </v-menu>
               </v-col>
-              <v-col cols="5" class="d-flex align-center">
+              <v-col
+                cols="6"
+                class="py-0 d-flex align-center"
+                style="padding-bottom: 16px !important"
+              >
                 <v-btn variant="outlined" class="mx-2" @click="setDatePreset(7)"
                   >1주일</v-btn
                 >
@@ -165,11 +169,11 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, watch } from "vue";
+import { defineComponent, ref, computed, watch, Ref, onMounted } from "vue";
 import { Item } from "@/types/item/item";
-import { formatDate } from "@/utils/date-formatter";
-import { PageResponse } from "@/types/common/response";
+import { BaseResponse, PageResponse } from "@/types/common/response";
 import { request } from "@/utils/request-client";
+import { Category } from "@/types/item/category";
 
 export default defineComponent({
   name: "ItemManageView",
@@ -192,8 +196,9 @@ export default defineComponent({
     const showList = ref(true);
     const selectedItemId = ref<number | null>(null);
 
-    const mainCategories = ref(["대분류1", "대분류2", "대분류3"]);
-    const subCategories = ref(["소분류1", "소분류2", "소분류3"]);
+    const mainCategories = ref<Category[]>([]);
+    const subCategories = ref<Category[]>([]);
+    const filteredSubCategories = ref<Category[]>([]);
     const cities = ref(["서울", "부산", "대구"]);
     const districts = ref(["강남구", "서초구", "동작구"]);
 
@@ -207,10 +212,69 @@ export default defineComponent({
       { text: "상세", value: "actions", sortable: false },
     ];
 
-    // const updateDateRange = (dates: (Date | null)[]) => {
-    //   dateRange.value = dates; // dateRange에 새로운 날짜 값 할당
-    //   dateMenu.value = false;
-    // };
+    const fetchCategories = async () => {
+      try {
+        const response = await request<BaseResponse<Category[]>>(
+          "/v1/categories",
+          {
+            method: "GET",
+          }
+        );
+        const categories = response.data;
+        console.log("=======READ==========", response.data);
+        mainCategories.value = categories.filter(
+          (category) => category.parentId == null
+        );
+        subCategories.value = categories.filter(
+          (category) => category.parentId != null
+        );
+      } catch (error) {
+        console.error("Fail to fetch categories.", error);
+      }
+    };
+
+    watch(mainCategory, (newVal) => {
+      if (newVal) {
+        filteredSubCategories.value = subCategories.value.filter(
+          (category) => category.parentId === (newVal ? Number(newVal) : null)
+        );
+      } else {
+        filteredSubCategories.value = [];
+      }
+      subCategory.value = "";
+    });
+
+    const fetchItems = async () => {
+      loading.value = true;
+      const params = {
+        page: currentPage.value,
+        size: itemsPerPage.value,
+        name: searchFields.value.name,
+        mainCategory: mainCategory.value,
+        subCategory: subCategory.value,
+        itemStatus: itemStatus.value,
+        city: city.value,
+        district: district.value,
+        startDate: dateRange.value[0]
+          ? formatDate(dateRange.value[0])
+          : undefined,
+        endDate: dateRange.value[1]
+          ? formatDate(dateRange.value[1])
+          : undefined,
+      };
+
+      try {
+        const response = await request<PageResponse<Item[]>>("/v1/items", {
+          params,
+        });
+        items.value = response.data.content;
+        totalItems.value = response.data.totalElements;
+      } catch (error) {
+        console.error("Error fetching items:", error);
+      } finally {
+        loading.value = false;
+      }
+    };
 
     const dateRangeText = computed(() => {
       if (dateRange.value?.length > 0) {
@@ -252,66 +316,19 @@ export default defineComponent({
         : "";
     };
 
-    // const fetchMainCategories = async () => {
-    //   try {
-    //     const response = await request.get("/v1/categories");
-    //     mainCategories.value = response.data.data.filter(
-    //       category => category.parentId == null
-    //     );
-    //   } catch (error) {
-    //     console.error("Fail to fetch main categories.", error);
-    //   }
-    // };
-    const fetchItems = async () => {
-      loading.value = true;
-      const params = {
-        page: currentPage.value,
-        size: itemsPerPage.value,
-        name: searchFields.value.name,
-        mainCategory: mainCategory.value,
-        subCategory: subCategory.value,
-        itemStatus: itemStatus.value,
-        city: city.value,
-        district: district.value,
-        startDate: dateRange.value[0]
-          ? formatDate(dateRange.value[0])
-          : undefined,
-        endDate: dateRange.value[1]
-          ? formatDate(dateRange.value[1])
-          : undefined,
-      };
-
-      try {
-        const response = await request<PageResponse<Item[]>>("/v1/items", {
-          params,
-        });
-        items.value = response.data.content;
-        totalItems.value = response.data.totalElements;
-      } catch (error) {
-        console.error("Error fetching items:", error);
-      } finally {
-        loading.value = false;
-      }
-    };
-
     const handleSearch = () => {
       currentPage.value = 1;
       fetchItems();
     };
 
-    // const dateRangeText = computed(() => {
-    //   if (dateRange.value?.length) {
-    //     return dateRange.value.length === 1
-    //       ? formatDate(dateRange.value[0])
-    //       : `${formatDate(dateRange.value[0])} ~ ${formatDate(
-    //           dateRange.value[1]
-    //         )}`;
-    //   }
-    //   return "";
-    // });
+    onMounted(() => {
+      fetchCategories();
+      fetchItems();
+    });
 
     const onPageChange = (page: number) => {
       currentPage.value = page;
+      // fetchCategories();
       fetchItems();
     };
 
@@ -345,7 +362,6 @@ export default defineComponent({
       items,
       handleSearch,
       dateRangeText,
-      // updateDateRange,
       onPageChange,
       onItemsPerPageChange,
       showList,
