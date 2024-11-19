@@ -1,6 +1,6 @@
 {
   "name": "locat-admin",
-  "version": "0.6.0-beta",
+  "version": "0.6.3-alpha",
   "private": true,
   "scripts": {
     "dev": "vite",
