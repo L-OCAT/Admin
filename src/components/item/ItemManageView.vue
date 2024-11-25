@@ -29,6 +29,8 @@
                 <v-select
                   v-model="mainCategory"
                   :items="mainCategories"
+                  item-value="id"
+                  item-title="name"
                   label="카테고리 대분류"
                   outlined
                 ></v-select>
@@ -36,9 +38,12 @@
               <v-col cols="3" class="py-0 d-flex align-center">
                 <v-select
                   v-model="subCategory"
-                  :items="subCategories"
+                  :items="filteredSubCategories"
+                  item-value="id"
+                  item-title="name"
                   label="카테고리 소분류"
                   outlined
+                  :disabled="!mainCategory"
                 ></v-select>
               </v-col>
             </v-row>
@@ -169,7 +174,15 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, watch, Ref, onMounted } from "vue";
+import {
+  defineComponent,
+  ref,
+  computed,
+  watch,
+  Ref,
+  onMounted,
+  toRaw,
+} from "vue";
 import { Item } from "@/types/item/item";
 import { BaseResponse, PageResponse } from "@/types/common/response";
 import { request } from "@/utils/request-client";
@@ -201,7 +214,6 @@ export default defineComponent({
     const filteredSubCategories = ref<Category[]>([]);
     const cities = ref(["서울", "부산", "대구"]);
     const districts = ref(["강남구", "서초구", "동작구"]);
-
     const headers = [
       { text: "번호", align: "start", value: "id" },
       { text: "물건명", value: "name" },
@@ -221,12 +233,13 @@ export default defineComponent({
           }
         );
         const categories = response.data;
-        console.log("=======READ==========", response.data);
         mainCategories.value = categories.filter(
-          (category) => category.parentId == null
+          (category) =>
+            category.parentId === null || category.parentId === undefined
         );
         subCategories.value = categories.filter(
-          (category) => category.parentId != null
+          (category) =>
+            category.parentId !== null && category.parentId !== undefined
         );
       } catch (error) {
         console.error("Fail to fetch categories.", error);
@@ -348,6 +361,7 @@ export default defineComponent({
       subCategory,
       mainCategories,
       subCategories,
+      filteredSubCategories,
       dateRange,
       dateMenu,
       itemStatus,
