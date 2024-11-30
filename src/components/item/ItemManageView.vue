@@ -123,6 +123,16 @@
                   :items="districts"
                   label="구/군"
                   outlined
+                  :disabled="!city"
+                ></v-select>
+              </v-col>
+              <v-col>
+                <v-select
+                  v-model="town"
+                  :items="towns"
+                  label="읍/면/동"
+                  outlined
+                  :disabled="!district"
                 ></v-select>
               </v-col>
               <v-col
@@ -201,6 +211,7 @@ export default defineComponent({
     const dateMenu = ref(false);
     const city = ref("");
     const district = ref("");
+    const town = ref("");
     const loading = ref(false);
     const currentPage = ref(1);
     const itemsPerPage = ref(20);
@@ -212,8 +223,34 @@ export default defineComponent({
     const mainCategories = ref<Category[]>([]);
     const subCategories = ref<Category[]>([]);
     const filteredSubCategories = ref<Category[]>([]);
-    const cities = ref(["서울", "부산", "대구"]);
-    const districts = ref(["강남구", "서초구", "동작구"]);
+    // const cities = ref(["서울", "부산", "대구"]);
+    // const districts = ref(["강남구", "서초구", "동작구"]);
+    const fixedLocationData = ref({
+      cities: [
+        {
+          name: "서울특별시",
+          districts: [
+            {
+              name: "중구",
+              towns: ["동자동", "도동1가"],
+            },
+            {
+              name: "종로구",
+              towns: ["청운동", "사직동"],
+            },
+          ],
+        },
+        {
+          name: "부산광역시",
+          districts: [{ name: "해운대구", towns: ["좌동", "중동"] }],
+        },
+      ],
+    });
+
+    const cities = ref(fixedLocationData.value.cities.map((city) => city.name));
+    const districts = ref<string[]>([]);
+    const towns = ref<string[]>([]);
+
     const headers = [
       { text: "번호", align: "start", value: "id" },
       { text: "물건명", value: "name" },
@@ -255,6 +292,28 @@ export default defineComponent({
         filteredSubCategories.value = [];
       }
       subCategory.value = "";
+    });
+
+    watch(city, (newCity) => {
+      const selectedCity = fixedLocationData.value.cities.find(
+        (c) => c.name === newCity
+      );
+      districts.value = selectedCity
+        ? selectedCity.districts.map((d) => d.name)
+        : [];
+      district.value = ""; // 이전 선택값 초기화
+      towns.value = []; // 읍면동 초기화
+    });
+
+    watch(district, (newDistrict) => {
+      const selectedCity = fixedLocationData.value.cities.find(
+        (c) => c.name === city.value
+      );
+      const selectedDistrict = selectedCity?.districts.find(
+        (d) => d.name === newDistrict
+      );
+      towns.value = selectedDistrict ? selectedDistrict.towns : [];
+      town.value = "";
     });
 
     const fetchItems = async () => {
@@ -369,6 +428,8 @@ export default defineComponent({
       cities,
       district,
       districts,
+      town,
+      towns,
       loading,
       currentPage,
       itemsPerPage,
