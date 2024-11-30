@@ -3,7 +3,7 @@
     <h4 class="text-h4 font-weight-bold mb-4">아이템 관리</h4>
     <v-slide-x-transition>
       <div v-if="showList">
-        <v-card class="mb-12">
+        <v-card class="mb-10">
           <v-card-text>
             <v-row class="mb-0">
               <v-col cols="6" class="d-flex align-center">
@@ -108,7 +108,7 @@
                 >
               </v-col>
             </v-row>
-            <v-row class="mt-0 align-center">
+            <v-row class="mt-0 mb-0 align-center">
               <v-col cols="12" sm="6" md="3">
                 <v-select
                   v-model="city"
@@ -135,14 +135,9 @@
                   :disabled="!district"
                 ></v-select>
               </v-col>
-              <v-col
-                cols="12"
-                sm="6"
-                md="3"
-                class="d-flex align-center justify-end"
-              >
-                <v-btn color="#ff5f2c" @click="handleSearch" dark>검색</v-btn>
-              </v-col>
+            </v-row>
+            <v-row class="mt-0 mb-0 align-center justify-center">
+              <v-btn color="#ff5f2c" @click="handleSearch" dark>검색</v-btn>
             </v-row>
           </v-card-text>
         </v-card>
@@ -301,8 +296,8 @@ export default defineComponent({
       districts.value = selectedCity
         ? selectedCity.districts.map((d) => d.name)
         : [];
-      district.value = ""; // 이전 선택값 초기화
-      towns.value = []; // 읍면동 초기화
+      district.value = "";
+      towns.value = [];
     });
 
     watch(district, (newDistrict) => {
