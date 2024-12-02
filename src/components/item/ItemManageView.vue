@@ -192,6 +192,7 @@ import { Item } from "@/types/item/item";
 import { BaseResponse, PageResponse } from "@/types/common/response";
 import { request } from "@/utils/request-client";
 import { Category } from "@/types/item/category";
+import {options} from "axios";
 
 export default defineComponent({
   name: "ItemManageView",
@@ -226,8 +227,8 @@ export default defineComponent({
           name: "서울특별시",
           districts: [
             {
-              name: "중구",
-              towns: ["동자동", "도동1가"],
+              name: "용산구",
+              towns: ["동자동", "한강로동"],
             },
             {
               name: "종로구",
@@ -312,28 +313,35 @@ export default defineComponent({
     });
 
     const fetchItems = async () => {
+      console.log("fetchItems called");
       loading.value = true;
       const params = {
+        itemType: itemStatus.value === "all" ? null : itemStatus.value,
+        itemName: searchFields.value.name || null,
+        categoryId: subCategory.value || mainCategory.value || null,
+        region1: city.value || null,
+        region2: district.value || null,
+        region3: town.value || null,
+        from: dateRange.value[0]
+          ? dateRange.value[0].toISOString().split("T")[0]
+          : undefined,
+        to: dateRange.value[1]
+          ? dateRange.value[1].toISOString().split("T")[0]
+          : undefined,
         page: currentPage.value,
         size: itemsPerPage.value,
-        name: searchFields.value.name,
-        mainCategory: mainCategory.value,
-        subCategory: subCategory.value,
-        itemStatus: itemStatus.value,
-        city: city.value,
-        district: district.value,
-        startDate: dateRange.value[0]
-          ? formatDate(dateRange.value[0])
-          : undefined,
-        endDate: dateRange.value[1]
-          ? formatDate(dateRange.value[1])
-          : undefined,
+        ...options?.params,
       };
+
+      console.log("Request Params:", params);
 
       try {
         const response = await request<PageResponse<Item[]>>("/v1/items", {
+          method: "GET",
+          ...options,
           params,
         });
+        console.log("API Response:", response.data);
         items.value = response.data.content;
         totalItems.value = response.data.totalElements;
       } catch (error) {
@@ -384,6 +392,7 @@ export default defineComponent({
     };
 
     const handleSearch = () => {
+      console.log("handleSearch called");
       currentPage.value = 1;
       fetchItems();
     };
