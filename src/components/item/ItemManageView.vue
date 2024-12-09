@@ -175,11 +175,14 @@
                 <template v-slot:[`item.categoryPath`]="{ item }">
                   {{ item.categoryPath }}
                 </template>
-                <template v-slot:[`item.date`]="{ item }">
-                  {{ formatDate(item.date) }}
+                <template v-slot:[`item.createdAt`]="{ item }">
+                  {{ formatStringDate(item.createdAt) }}
                 </template>
                 <template v-slot:[`item.location`]="{ item }">
-                  {{ item.location || "-" }}
+                  {{ item.region2 || "-" }}
+                </template>
+                <template v-slot:[`item.type`]="{ item }">
+                  {{ item.type || "-" }}
                 </template>
                 <template v-slot:[`item.actions`]="{ item }">
                   <v-btn
@@ -273,7 +276,7 @@ export default defineComponent({
       { title: "카테고리", key: "categoryPath" },
       { title: "등록일", key: "createdAt" },
       { title: "위치", key: "location" },
-      { title: "상태", key: "status" },
+      { title: "분류", key: "type" },
       { title: "상세", key: "actions", sortable: false },
     ];
 
@@ -415,6 +418,11 @@ export default defineComponent({
       dateRange.value = [startDate, endDate];
     };
 
+    const formatStringDate = (date: string | null): string => {
+      if (!date) return ""; // null이나 undefined 처리
+      return date.split("T")[0].replace(/-/g, "."); // "2024-11-03" 추출 후 "."으로 변경
+    };
+
     const formatDate = (date: Date | null) => {
       return date
         ? new Date(date).toISOString().slice(0, 10).replace(/-/g, ".")
@@ -479,6 +487,7 @@ export default defineComponent({
       selectedItemId,
       setDatePreset,
       formatDate,
+      formatStringDate,
       handleDateSelect,
       getCategoryName,
     };
