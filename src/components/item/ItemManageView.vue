@@ -143,6 +143,12 @@
         </v-card>
         <v-slide-x-transition>
           <div v-if="showList">
+            <!-- 총 개수 표시 -->
+            <div class="d-flex justify-space-between align-center mb-4">
+              <span class="text-subtitle-1 font-weight-bold"
+                >총 {{ totalItems || 0 }}개</span
+              >
+            </div>
             <!-- 목록 테이블 -->
             <v-card outlined>
               <v-data-table
@@ -159,6 +165,22 @@
                 :loading="loading"
                 class="elevation-1"
               >
+                <!-- 커스텀 컬럼 슬롯 -->
+                <template v-slot:[`item.id`]="{ item }">
+                  {{ item.id }}
+                </template>
+                <template v-slot:[`item.name`]="{ item }">
+                  {{ item.name }}
+                </template>
+                <template v-slot:[`item.categoryPath`]="{ item }">
+                  {{ item.categoryPath }}
+                </template>
+                <template v-slot:[`item.date`]="{ item }">
+                  {{ formatDate(item.date) }}
+                </template>
+                <template v-slot:[`item.location`]="{ item }">
+                  {{ item.location || "-" }}
+                </template>
                 <template v-slot:[`item.actions`]="{ item }">
                   <v-btn
                     small
@@ -192,7 +214,7 @@ import { Item } from "@/types/item/item";
 import { BaseResponse, PageResponse } from "@/types/common/response";
 import { request } from "@/utils/request-client";
 import { Category } from "@/types/item/category";
-import {options} from "axios";
+import { AxiosRequestConfig } from "axios";
 
 export default defineComponent({
   name: "ItemManageView",
@@ -219,8 +241,6 @@ export default defineComponent({
     const mainCategories = ref<Category[]>([]);
     const subCategories = ref<Category[]>([]);
     const filteredSubCategories = ref<Category[]>([]);
-    // const cities = ref(["서울", "부산", "대구"]);
-    // const districts = ref(["강남구", "서초구", "동작구"]);
     const fixedLocationData = ref({
       cities: [
         {
@@ -248,13 +268,13 @@ export default defineComponent({
     const towns = ref<string[]>([]);
 
     const headers = [
-      { text: "번호", align: "start", value: "id" },
-      { text: "물건명", value: "name" },
-      { text: "카테고리", value: "category" },
-      { text: "등록일", value: "date" },
-      { text: "위치", value: "location" },
-      { text: "상태", value: "status" },
-      { text: "상세", value: "actions", sortable: false },
+      { title: "번호", align: "start" as const, sortable: true, key: "id" },
+      { title: "물건명", key: "name" },
+      { title: "카테고리", key: "categoryPath" },
+      { title: "등록일", key: "createdAt" },
+      { title: "위치", key: "location" },
+      { title: "상태", key: "status" },
+      { title: "상세", key: "actions", sortable: false },
     ];
 
     const fetchCategories = async () => {
@@ -277,6 +297,15 @@ export default defineComponent({
       } catch (error) {
         console.error("Fail to fetch categories.", error);
       }
+    };
+
+    const getCategoryName = (categoryId: number | null): string => {
+      if (!categoryId) return "-";
+      const category =
+        mainCategories.value.find((cat) => cat.id === categoryId) ||
+        subCategories.value.find((cat) => cat.id === categoryId);
+      console.log(category);
+      return category ? category.name : "-";
     };
 
     watch(mainCategory, (newVal) => {
@@ -312,7 +341,7 @@ export default defineComponent({
       town.value = "";
     });
 
-    const fetchItems = async () => {
+    const fetchItems = async (options?: AxiosRequestConfig) => {
       console.log("fetchItems called");
       loading.value = true;
       const params = {
@@ -343,6 +372,7 @@ export default defineComponent({
         });
         console.log("API Response:", response.data);
         items.value = response.data.content;
+        console.log(items.value);
         totalItems.value = response.data.totalElements;
       } catch (error) {
         console.error("Error fetching items:", error);
@@ -438,6 +468,7 @@ export default defineComponent({
       currentPage,
       itemsPerPage,
       headers,
+      totalItems,
       items,
       handleSearch,
       dateRangeText,
@@ -447,7 +478,9 @@ export default defineComponent({
       showItemDetail,
       selectedItemId,
       setDatePreset,
+      formatDate,
       handleDateSelect,
+      getCategoryName,
     };
   },
 });
