@@ -4,7 +4,7 @@
       <v-container class="d-flex flex-column fill-height pa-0">
         <div class="d-flex align-center justify-center pa-4">
           <v-img
-            src="@/assets/logo.svg"
+            src="/src/assets/logo.svg"
             alt="Logo"
             width="60"
             height="60"
