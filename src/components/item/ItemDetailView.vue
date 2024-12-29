@@ -116,6 +116,11 @@
 </template>
 
 <script lang="ts">
+declare global {
+  interface Window {
+    kakao: any;
+  }
+}
 import { defineComponent, onMounted, ref } from "vue";
 import { request } from "@/utils/request-client";
 import { BaseResponse } from "@/types/common/response";
@@ -169,8 +174,71 @@ export default defineComponent({
       });
     };
 
-    onMounted(() => {
-      fetchItemDetail();
+    const initMap = () => {
+      console.log("initMap 함수 실행");
+      console.log(
+        "Kakao Maps script URL:",
+        `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.VUE_APP_KAKAO_KEY}`
+      );
+
+      const script = document.createElement("script");
+      script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.VUE_APP_KAKAO_KEY}&autoload=false`;
+      script.async = true;
+
+      script.onload = () => {
+        console.log("Kakao Maps 스크립트 로드 성공!");
+
+        // Kakao Maps 초기화
+        if (window.kakao) {
+          console.log("Kakao Maps 초기화 시작");
+          window.kakao.maps.load(() => {
+            console.log("Kakao Maps 초기화 완료");
+
+            if (
+              itemDetail.value &&
+              itemDetail.value.lat &&
+              itemDetail.value.lng
+            ) {
+              const mapContainer = document.getElementById("map");
+              if (!mapContainer) {
+                console.error("Map container가 존재하지 않습니다.");
+                return;
+              }
+
+              const mapOption = {
+                center: new window.kakao.maps.LatLng(
+                  itemDetail.value.lat,
+                  itemDetail.value.lng
+                ),
+                level: 3,
+              };
+              const map = new window.kakao.maps.Map(mapContainer, mapOption);
+
+              const markerPosition = new window.kakao.maps.LatLng(
+                itemDetail.value.lat,
+                itemDetail.value.lng
+              );
+              const marker = new window.kakao.maps.Marker({
+                position: markerPosition,
+              });
+              marker.setMap(map);
+            }
+          });
+        } else {
+          console.error("Kakao Maps 객체가 생성되지 않았습니다.");
+        }
+      };
+
+      script.onerror = (error) => {
+        console.error("Kakao Maps 스크립트를 로드할 수 없습니다.", error);
+      };
+
+      document.head.appendChild(script);
+    };
+
+    onMounted(async () => {
+      await fetchItemDetail();
+      initMap();
     });
 
     return {
