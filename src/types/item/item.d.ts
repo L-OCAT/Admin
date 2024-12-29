@@ -1,6 +1,7 @@
 export type ItemStatus = "lost" | "found";
 export interface Item {
   readonly id: number;
+  readonly itemId: number;
   readonly name: string;
   readonly categoryPath: number;
   readonly location: string;

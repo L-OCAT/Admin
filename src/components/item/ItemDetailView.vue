@@ -1,115 +1,210 @@
 <template>
-  <v-container fluid>
-    <v-card class="pa-4" outlined>
-      <v-card-title class="text-h5 font-weight-bold">게시글 관리</v-card-title>
-      <v-row>
-        <!-- 사진 및 기본 정보 -->
-        <v-col cols="12" sm="4">
-          <v-img
-            :src="item.imageUrl || 'default-image.jpg'"
-            alt="물건 이미지"
-            width="100%"
-            height="300px"
-            contain
-          ></v-img>
-        </v-col>
-        <v-col cols="12" sm="8">
-          <v-row>
-            <v-col cols="4">물건명</v-col>
-            <v-col cols="8">{{ item.name || "%물건명%" }}</v-col>
+  <v-container>
+    <v-card class="detail-view">
+      <div v-if="loading" class="text-center pa-6">
+        <v-progress-circular
+          indeterminate
+          color="primary"
+        ></v-progress-circular>
+      </div>
 
-            <v-col cols="4">분류</v-col>
-            <v-col cols="8">{{ item.status || "분실물" }}</v-col>
+      <div v-else-if="error" class="text-center pa-6 error--text">
+        {{ error }}
+      </div>
 
-            <v-col cols="4">카테고리</v-col>
-            <v-col cols="8">{{ item.category || "%대분류% > %소분류%" }}</v-col>
+      <v-card-text v-else-if="itemDetail" class="pa-6">
+        <v-row>
+          <!-- 물건 이미지 -->
+          <v-col cols="12" md="4" class="text-center">
+            <v-img
+              :src="itemDetail.imageUrl || '/placeholder-image.png'"
+              aspect-ratio="1"
+              contain
+              class="rounded-lg elevation-2"
+            ></v-img>
+          </v-col>
 
-            <v-col cols="4">색상</v-col>
-            <v-col cols="8">{{ item.color || "%색상%" }}</v-col>
+          <!-- 물건 정보 -->
+          <v-col cols="12" md="8">
+            <v-card class="info-card" elevation="2">
+              <v-card-title class="primary lighten-1 white--text py-4">
+                <v-icon icon="mdi-information" class="mr-2" />
+                물건 정보
+              </v-card-title>
+              <v-card-text class="pa-4">
+                <v-row>
+                  <v-col cols="6">
+                    <div class="info-box">
+                      <div class="info-label">물건명</div>
+                      <div class="info-value">
+                        {{ itemDetail.itemName || "-" }}
+                      </div>
+                    </div>
+                  </v-col>
+                  <v-col cols="6">
+                    <div class="info-box">
+                      <div class="info-label">등록자</div>
+                      <div class="info-value">
+                        {{ itemDetail.username || "-" }}
+                      </div>
+                    </div>
+                  </v-col>
+                  <v-col cols="6">
+                    <div class="info-box">
+                      <div class="info-label">분류</div>
+                      <div class="info-value">
+                        {{
+                          itemDetail.itemType === "lost" ? "분실물" : "습득물"
+                        }}
+                      </div>
+                    </div>
+                  </v-col>
+                  <v-col cols="6">
+                    <div class="info-box">
+                      <div class="info-label">등록일</div>
+                      <div class="info-value">
+                        {{ formatDate(itemDetail.createdAt) }}
+                      </div>
+                    </div>
+                  </v-col>
+                  <v-col cols="6">
+                    <div class="info-box">
+                      <div class="info-label">카테고리</div>
+                      <div class="info-value">
+                        {{ itemDetail.categoryPath || "-" }}
+                      </div>
+                    </div>
+                  </v-col>
+                  <v-col cols="6">
+                    <div class="info-box">
+                      <div class="info-label">색상</div>
+                      <div class="info-value">
+                        {{ itemDetail.colorNames?.join(", ") || "-" }}
+                      </div>
+                    </div>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
 
-            <v-col cols="4">등록자</v-col>
-            <v-col cols="8">{{ item.registrant || "%닉네임%" }}</v-col>
+        <!-- 위치 -->
+        <v-row class="mt-6">
+          <v-col cols="12">
+            <v-card elevation="2">
+              <v-card-title class="info lighten-1 white--text py-4">
+                <v-icon icon="mdi-map-marker" class="mr-2" />
+                위치
+              </v-card-title>
+              <v-card-text class="pa-4">
+                <p class="text-body-1">
+                  {{ itemDetail.region1 || "-" }} >
+                  {{ itemDetail.region2 || "-" }} >
+                  {{ itemDetail.region3 || "-" }}
+                </p>
+                <div id="map" style="height: 400px"></div>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-card-text>
 
-            <v-col cols="4">등록일</v-col>
-            <v-col cols="8">{{ item.registrationDate || "yyyy.mm.dd" }}</v-col>
-
-            <v-col cols="4">삭제일</v-col>
-            <v-col cols="8">{{ item.deletionDate || "yyyy.mm.dd" }}</v-col>
-          </v-row>
-        </v-col>
-      </v-row>
-
-      <!-- 위치 정보 -->
-      <v-row class="mt-4">
-        <v-col cols="12" class="text-h6 font-weight-bold"> 위치 </v-col>
-        <v-col cols="12">{{ item.location || "%위치정보%" }}</v-col>
-        <v-col cols="12">
-          <!-- 지도 이미지 or 실제 지도 연동 -->
-          <v-img
-            :src="mapImageUrl"
-            alt="지도"
-            width="100%"
-            height="300px"
-            contain
-          ></v-img>
-        </v-col>
-      </v-row>
-
-      <!-- 수정 및 삭제 버튼 -->
-      <v-row class="mt-4 d-flex justify-center">
-        <v-btn color="#ff5f2c" @click="editItem" dark>수정</v-btn>
-        <v-btn color="#ff5f2c" @click="deleteItem" dark outlined>삭제</v-btn>
-      </v-row>
+      <div v-else class="text-center pa-6">물건 정보를 찾을 수 없습니다.</div>
     </v-card>
   </v-container>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from "vue";
+import { defineComponent, onMounted, ref } from "vue";
+import { request } from "@/utils/request-client";
+import { BaseResponse } from "@/types/common/response";
+import { ItemDetail } from "@/types/item/item-detail";
 
 export default defineComponent({
   name: "ItemDetailView",
   props: {
-    item: {
-      type: Object as PropType<{
-        name: string;
-        status: string;
-        category: string;
-        color: string;
-        registrant: string;
-        registrationDate: string;
-        deletionDate: string;
-        location: string;
-        imageUrl: string;
-      }>,
+    id: {
+      type: Number,
       required: true,
     },
   },
-  computed: {
-    mapImageUrl(): string {
-      // 지도 이미지 URL 또는 실제 지도 연동 로직을 추가할 수 있습니다.
-      return "path-to-map-image.jpg";
-    },
-  },
-  methods: {
-    editItem() {
-      // 수정 기능 로직
-      console.log("Edit item:", this.item);
-    },
-    deleteItem() {
-      // 삭제 기능 로직
-      console.log("Delete item:", this.item);
-    },
+  setup(props) {
+    const itemDetail = ref<ItemDetail | null>(null);
+    const loading = ref(true);
+    const error = ref<string | null>(null);
+
+    const fetchItemDetail = async () => {
+      loading.value = true;
+      error.value = null;
+
+      try {
+        const response = await request<BaseResponse<ItemDetail>>(
+          `/v1/items/${props.id}`,
+          {
+            method: "GET",
+          }
+        );
+        itemDetail.value = response.data;
+        console.log(response.data);
+      } catch (err) {
+        error.value = "물건 정보를 불러오지 못했습니다.";
+        console.error(err);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    const formatDate = (dateArray: number[] | null): string => {
+      if (!dateArray || dateArray.length < 3) return "-"; // 배열이 없거나 길이가 3보다 작으면 유효하지 않음
+
+      const [year, month, day, hour = 0, minute = 0, second = 0] = dateArray;
+
+      const date = new Date(year, month - 1, day, hour, minute, second);
+
+      return date.toLocaleDateString("ko-KR", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+    };
+
+    onMounted(() => {
+      fetchItemDetail();
+    });
+
+    return {
+      itemDetail,
+      loading,
+      error,
+      formatDate,
+    };
   },
 });
 </script>
 
 <style scoped>
-.v-card {
-  border-radius: 12px;
+.info-box {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 16px;
 }
-.v-btn {
-  text-transform: none;
-  font-weight: 600;
+
+.info-label {
+  font-weight: bold;
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+
+.info-value {
+  font-size: 1.1rem;
+  color: #555;
+}
+
+#map {
+  width: 100%;
+  height: 400px;
+  border-radius: 8px;
 }
 </style>

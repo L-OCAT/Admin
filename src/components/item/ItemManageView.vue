@@ -46,6 +46,9 @@
                   :disabled="!mainCategory"
                 ></v-select>
               </v-col>
+              <v-col cols="2" class="d-flex align-center">
+                <v-btn color="#ff5f2c" @click="resetCategory">초기화 </v-btn>
+              </v-col>
             </v-row>
             <v-row class="mt-0 mb-0 align-center">
               <v-col cols="3">
@@ -141,50 +144,53 @@
             </v-row>
           </v-card-text>
         </v-card>
-        <v-slide-x-transition>
-          <div v-if="showList">
-            <!-- 총 개수 표시 -->
-            <div class="d-flex justify-space-between align-center mb-4">
-              <span class="text-subtitle-1 font-weight-bold"
-                >총 {{ totalItems || 0 }}개</span
-              >
-            </div>
-            <!-- 목록 테이블 -->
-            <v-card outlined>
-              <v-data-table
-                :headers="headers"
-                :items="items"
-                :items-per-page="itemsPerPage"
-                :page="currentPage"
-                :items-per-page-options="[10, 20, 30, 50]"
-                @update:page="onPageChange"
-                @update:items-per-page="onItemsPerPageChange"
-                items-per-page-text="페이지 당 아이템 수"
-                no-data-text="분실물을 찾을 수 없습니다."
-                loading-text="목록을 불러오는 중..."
-                :loading="loading"
-                class="elevation-1"
-              >
-                <!-- 커스텀 컬럼 슬롯 -->
-                <template v-slot:[`item.id`]="{ item }">
+        <div v-if="showList">
+          <!-- 총 개수 표시 -->
+          <div class="d-flex justify-space-between align-center mb-4">
+            <span class="text-subtitle-1 font-weight-bold"
+              >총 {{ totalItems || 0 }}개</span
+            >
+          </div>
+          <!-- 목록 테이블 -->
+          <v-card outlined>
+            <v-data-table
+              :headers="headers"
+              :items="items"
+              :items-per-page="itemsPerPage"
+              :page="currentPage"
+              :items-per-page-options="[10, 20, 30, 50]"
+              @update:page="onPageChange"
+              @update:items-per-page="onItemsPerPageChange"
+              items-per-page-text="페이지 당 아이템 수"
+              no-data-text="분실물을 찾을 수 없습니다."
+              loading-text="목록을 불러오는 중..."
+              :loading="loading"
+              class="elevation-1"
+            >
+              <template v-slot:[`item.id`]="{ item }">
+                <div class="text-center">
                   {{ item.id }}
-                </template>
-                <template v-slot:[`item.name`]="{ item }">
-                  {{ item.name }}
-                </template>
-                <template v-slot:[`item.categoryPath`]="{ item }">
-                  {{ item.categoryPath }}
-                </template>
-                <template v-slot:[`item.createdAt`]="{ item }">
+                </div>
+              </template>
+              <template v-slot:[`item.name`]="{ item }">
+                <div class="text-center">{{ item.name }}</div>
+              </template>
+              <template v-slot:[`item.categoryPath`]="{ item }">
+                <div class="text-center">{{ item.categoryPath }}</div>
+              </template>
+              <template v-slot:[`item.createdAt`]="{ item }">
+                <div class="text-center">
                   {{ formatStringDate(item.createdAt) }}
-                </template>
-                <template v-slot:[`item.location`]="{ item }">
-                  {{ item.region2 || "-" }}
-                </template>
-                <template v-slot:[`item.type`]="{ item }">
-                  {{ item.type || "-" }}
-                </template>
-                <template v-slot:[`item.actions`]="{ item }">
+                </div>
+              </template>
+              <template v-slot:[`item.location`]="{ item }">
+                <div class="text-center">{{ item.region2 || "-" }}</div>
+              </template>
+              <template v-slot:[`item.type`]="{ item }">
+                <div class="text-center">{{ item.type || "-" }}</div>
+              </template>
+              <template v-slot:[`item.actions`]="{ item }">
+                <div class="text-center">
                   <v-btn
                     small
                     color="#ff5f2c"
@@ -193,13 +199,29 @@
                   >
                     상세보기
                   </v-btn>
-                </template>
-              </v-data-table>
-            </v-card>
-          </div>
-        </v-slide-x-transition>
+                </div>
+              </template>
+            </v-data-table>
+          </v-card>
+        </div>
       </div>
     </v-slide-x-transition>
+    <v-slide-x-reverse-transition>
+      <div v-if="!showList">
+        <v-card>
+          <v-toolbar color="#ff5f2c" dark>
+            <v-btn icon @click="backToList">
+              <v-icon>mdi-arrow-left</v-icon>
+            </v-btn>
+            <v-toolbar-title>아이템 상세 정보</v-toolbar-title>
+          </v-toolbar>
+          <item-detail-view
+            :id="selectedItemId"
+            @back="backToList"
+          ></item-detail-view>
+        </v-card>
+      </div>
+    </v-slide-x-reverse-transition>
   </v-container>
 </template>
 
@@ -218,9 +240,13 @@ import { BaseResponse, PageResponse } from "@/types/common/response";
 import { request } from "@/utils/request-client";
 import { Category } from "@/types/item/category";
 import { AxiosRequestConfig } from "axios";
+import ItemDetailView from "@/components/item/ItemDetailView.vue";
 
 export default defineComponent({
   name: "ItemManageView",
+  components: {
+    ItemDetailView,
+  },
   setup() {
     const searchFields = ref({
       name: "",
@@ -240,7 +266,6 @@ export default defineComponent({
     const totalItems = ref(0);
     const showList = ref(true);
     const selectedItemId = ref<number | null>(null);
-
     const mainCategories = ref<Category[]>([]);
     const subCategories = ref<Category[]>([]);
     const filteredSubCategories = ref<Category[]>([]);
@@ -271,13 +296,18 @@ export default defineComponent({
     const towns = ref<string[]>([]);
 
     const headers = [
-      { title: "번호", align: "start" as const, sortable: true, key: "id" },
-      { title: "물건명", key: "name" },
-      { title: "카테고리", key: "categoryPath" },
-      { title: "등록일", key: "createdAt" },
-      { title: "위치", key: "location" },
-      { title: "분류", key: "type" },
-      { title: "상세", key: "actions", sortable: false },
+      {
+        title: "번호",
+        align: "center",
+        sortable: true,
+        key: "id",
+      },
+      { title: "물건명", align: "center", key: "name" },
+      { title: "카테고리", align: "center", key: "categoryPath" },
+      { title: "등록일", align: "center", key: "createdAt" },
+      { title: "위치", align: "center", key: "location" },
+      { title: "분류", align: "center", key: "type" },
+      { title: "상세", align: "center", key: "actions", sortable: false },
     ];
 
     const fetchCategories = async () => {
@@ -309,6 +339,11 @@ export default defineComponent({
         subCategories.value.find((cat) => cat.id === categoryId);
       console.log(category);
       return category ? category.name : "-";
+    };
+
+    const resetCategory = () => {
+      mainCategory.value = "";
+      subCategory.value = "";
     };
 
     watch(mainCategory, (newVal) => {
@@ -420,7 +455,7 @@ export default defineComponent({
 
     const formatStringDate = (date: string | null): string => {
       if (!date) return ""; // null이나 undefined 처리
-      return date.split("T")[0].replace(/-/g, "."); // "2024-11-03" 추출 후 "."으로 변경
+      return date.split("T")[0].replace(/-/g, ".");
     };
 
     const formatDate = (date: Date | null) => {
@@ -456,6 +491,11 @@ export default defineComponent({
       showList.value = false;
     };
 
+    const backToList = () => {
+      selectedItemId.value = null;
+      showList.value = true;
+    };
+
     return {
       searchFields,
       mainCategory,
@@ -485,11 +525,13 @@ export default defineComponent({
       showList,
       showItemDetail,
       selectedItemId,
+      backToList,
       setDatePreset,
       formatDate,
       formatStringDate,
       handleDateSelect,
       getCategoryName,
+      resetCategory,
     };
   },
 });
@@ -499,6 +541,16 @@ export default defineComponent({
 .v-data-table {
   border-radius: 8px;
   overflow: hidden;
+}
+.v-data-table-header-content :deep(thead th) {
+  text-align: center !important;
+  vertical-align: middle !important;
+  font-weight: bold;
+}
+.v-data-table tbody td {
+  /* 데이터 셀 중앙 정렬 */
+  text-align: center !important;
+  vertical-align: middle !important; /* 세로 중앙 정렬 */
 }
 .v-card {
   border-radius: 12px;
