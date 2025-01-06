@@ -4,7 +4,7 @@
       <v-container class="d-flex flex-column fill-height pa-0">
         <div class="d-flex align-center justify-center pa-4">
           <v-img
-            src="@/assets/logo.svg"
+            src="/src/assets/logo.svg"
             alt="Logo"
             width="60"
             height="60"
@@ -107,50 +107,37 @@ import { APP_VERSION, BUILD_DATE } from "@/App.vue";
 export default defineComponent({
   name: "MainView",
   components: {
+    DashboardView: defineAsyncComponent(
+      () => import("@/components/dashboard/DashboardView.vue")
+    ),
     UserManageView: defineAsyncComponent(
       () => import("@/components/user/UserManageView.vue")
+    ),
+    TermsManageView: defineAsyncComponent(
+      () => import("@/components/terms/TermsManageView.vue")
     ),
     ServerManageView: defineAsyncComponent(
       () => import("@/components/server/ServerManageView.vue")
     ),
-    ItemManageView: defineAsyncComponent(
-      () => import("@/components/item/ItemManageView.vue")
-    ),
   },
+
   setup() {
     const appTheme = useAppTheme();
-    const appVersion = APP_VERSION;
-    const buildDate = BUILD_DATE;
-    const isPreRelease = computed(() => {
-      const version = APP_VERSION.toLowerCase();
-      return (
-        version.includes("alpha") ||
-        version.includes("beta") ||
-        version.includes("rc") ||
-        version.includes("dev")
-      );
-    });
-    const currentView = ref("UserManageView");
+    const currentView = ref("DashboardView");
     const username = ref("");
     const userRole = ref("");
     const currentTime = ref("");
-
-    onMounted(() => {
-      appTheme.init();
-      updateTime();
-      timer = setInterval(updateTime, 1000);
-      const accessToken = localStorage.getItem("accessToken");
-      if (accessToken) {
-        const userDetails = parseJwt(accessToken);
-        username.value = `${userDetails.name}(${userDetails.sub})`;
-        userRole.value = userDetails.auth;
-      }
-    });
+    let timer: number;
 
     const menuItems = [
-      { title: "대시보드", icon: "mdi-view-dashboard", view: "UserManageView" },
+      { title: "대시보드", icon: "mdi-view-dashboard", view: "DashboardView" },
       { title: "사용자 관리", icon: "mdi-account", view: "UserManageView" },
-      { title: "아이템 관리", icon: "mdi-note-plus", view: "ItemManageView" },
+      // { title: "게시글 관리", icon: "mdi-text-box", view: "" },
+      {
+        title: "약관 관리",
+        icon: "mdi-file-cog-outline",
+        view: "TermsManageView",
+      },
       {
         title: "서버 상태 관리",
         icon: "mdi-heart-pulse",
@@ -163,28 +150,48 @@ export default defineComponent({
       currentTime.value = now.toLocaleString("ko-KR");
     };
 
-    let timer: number;
-
     const logout = () => {
-      // 로그아웃 로직 구현
-      console.log("로그아웃");
       invalidateToken();
       document.location.href = "/";
     };
 
+    onMounted(() => {
+      appTheme.init();
+      updateTime();
+      timer = setInterval(updateTime, 1000);
+
+      const accessToken = localStorage.getItem("accessToken");
+      if (accessToken) {
+        const userDetails = parseJwt(accessToken);
+        username.value = `${userDetails.name}(${userDetails.sub})`;
+        userRole.value = userDetails.auth;
+      }
+    });
+
     onUnmounted(() => {
       clearInterval(timer);
     });
+
+    const isPreRelease = computed(() => {
+      const version = APP_VERSION.toLowerCase();
+      return (
+        version.includes("alpha") ||
+        version.includes("beta") ||
+        version.includes("rc") ||
+        version.includes("dev")
+      );
+    });
+
     return {
-      appVersion,
-      buildDate,
+      appVersion: APP_VERSION,
+      buildDate: BUILD_DATE,
       isPreRelease,
       isDarkMode: computed(() => appTheme.isDarkMode),
       toggleDarkMode: () => appTheme.toggle(),
       currentView,
+      menuItems,
       username,
       currentTime,
-      menuItems,
       logout,
     };
   },

@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-card>
+    <v-card v-if="isSuperAdmin">
       <v-card-title class="d-flex align-center pa-4">
         <span class="text-h4 font-weight-bold">서버 상태 대시보드</span>
         <v-chip
@@ -44,15 +44,21 @@
         </v-row>
       </v-card-text>
     </v-card>
+    <v-card v-else class="text-center pa-6">
+      <v-icon size="48" color="error" class="mb-4">mdi-alert-circle</v-icon>
+      <div class="text-h5 mb-2">접근 권한 없음</div>
+      <div class="text-body-1">서버 상태 열람 권한이 없습니다.</div>
+    </v-card>
   </v-container>
 </template>
 
 <script lang="ts">
 import { computed, defineComponent, onMounted, ref } from "vue";
 import { IHealth, IServerHealth } from "@/types/server/server-metric";
-import { PUBLIC_API_KEY, request } from "@/utils/request-client";
+import { request } from "@/utils/request-client";
 import HealthComponentCard from "./HealthComponentCard.vue";
 import { getServerStatusColor } from "@/utils/color-utils";
+import { useAuth } from "@/store/auth";
 
 export default defineComponent({
   name: "ServerManageView",
@@ -60,15 +66,15 @@ export default defineComponent({
     HealthComponentCard,
   },
   setup() {
+    const auth = useAuth();
+    const isSuperAdmin = computed(() => auth.isSuperAdmin());
     const health = ref<IHealth | null>(null);
 
     const fetchHealthInfo = async () => {
+      if (!isSuperAdmin.value) return;
+
       try {
-        health.value = await request<IHealth>("/actuator/health", {
-          headers: {
-            "Locat-API-Key": PUBLIC_API_KEY,
-          },
-        });
+        health.value = await request<IHealth>("/actuator/health");
       } catch (error) {
         console.error("서버 상태 정보를 불러오는데 실패했습니다:", error);
       }
@@ -88,13 +94,16 @@ export default defineComponent({
     }));
 
     onMounted(() => {
-      fetchHealthInfo();
+      if (isSuperAdmin.value) {
+        fetchHealthInfo();
+      }
     });
 
     return {
       health,
       getServerStatusColor,
       serverHealth,
+      isSuperAdmin,
     };
   },
 });

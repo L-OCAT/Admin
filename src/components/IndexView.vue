@@ -11,9 +11,17 @@
 </template>
 
 <script lang="ts">
-import { defineAsyncComponent, defineComponent, ref, watch } from "vue";
-import { useRouter } from "vue-router";
+import {
+  defineAsyncComponent,
+  defineComponent,
+  onMounted,
+  ref,
+  watch,
+} from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useAuth } from "@/store/auth";
+import { request } from "@/utils/request-client";
+import { TokenDto } from "@/types/admin/login-response";
 
 export default defineComponent({
   name: "IndexView",
@@ -33,8 +41,16 @@ export default defineComponent({
   },
   setup() {
     const router = useRouter();
+    const route = useRoute();
     const auth = useAuth();
     const currentView = ref("LoginView");
+
+    onMounted(() => {
+      const oAuthId = route.query.oAuthId as string;
+      if (oAuthId) {
+        handleOAuthRedirect(oAuthId);
+      }
+    });
 
     watch(
       () => auth.isAuthenticated(),
@@ -72,6 +88,31 @@ export default defineComponent({
         }
       }
     );
+
+    const handleOAuthRedirect = (oAuthId: string) => {
+      request<TokenDto>("/v1/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        data: JSON.stringify({
+          oAuthId: oAuthId,
+          nickname: "LOCAT" + Math.floor(Math.random() * 10000),
+          isTermsOfServiceAgreed: true,
+          isPrivacyPolicyAgreed: true,
+          isLocationPolicyAgreed: true,
+          isMarketingPolicyAgreed: false,
+        }),
+      })
+        .then(() => {
+          alert("등록 성공! 기존 관리자가 승인하면 로그인이 가능합니다.");
+          router.replace({ name: "IndexView" });
+        })
+        .catch(() => {
+          alert("등록 실패! 관리자에게 문의해주세요.");
+          router.replace({ name: "IndexView" });
+        });
+    };
 
     return {
       currentView,

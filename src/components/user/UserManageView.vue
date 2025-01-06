@@ -1,24 +1,36 @@
 <template>
   <v-container fluid>
-    <!-- 목록 보기 -->
     <v-slide-x-transition>
       <div v-if="showList">
         <v-card class="mb-12">
-          <v-card-title class="text-h4 font-weight-bold">
+          <v-card-title class="text-h4 font-weight-bold mb-6">
             사용자 관리
           </v-card-title>
           <v-card-text>
-            <v-row>
-              <v-col cols="12" sm="6" md="4">
+            <v-row class="mb-0">
+              <v-col cols="4" class="py-0">
                 <v-text-field
-                  v-model="searchQuery"
-                  label="검색"
-                  prepend-inner-icon="mdi-magnify"
+                  v-model="searchFields.nickname"
+                  label="닉네임으로 검색"
+                  prepend-inner-icon="mdi-account"
                   clearable
                   @keyup.enter="handleSearch"
+                  height="48"
                 ></v-text-field>
               </v-col>
-              <v-col cols="12" sm="6" md="4">
+              <v-col cols="4" class="py-0">
+                <v-text-field
+                  v-model="searchFields.email"
+                  label="이메일으로 검색"
+                  prepend-inner-icon="mdi-email"
+                  clearable
+                  @keyup.enter="handleSearch"
+                  height="48"
+                ></v-text-field>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="4" class="py-0 d-flex align-center">
                 <v-menu
                   v-model="dateMenu"
                   :close-on-content-click="false"
@@ -30,31 +42,75 @@
                   <template v-slot:activator="{ props }">
                     <v-text-field
                       v-model="dateRangeText"
-                      label="검색 기간 선택"
+                      label="가입일로 검색"
                       prepend-inner-icon="mdi-calendar"
                       readonly
                       v-bind="props"
+                      height="48"
                     ></v-text-field>
                   </template>
-                  <v-date-picker
-                    v-model="dateRange"
-                    range
-                    no-title
-                    multiple
-                    color="#ff5f2c"
-                    @update:model-value="handleDateSelect"
-                    locale="ko-KR"
-                  >
-                  </v-date-picker>
+                  <v-card>
+                    <v-card-text>
+                      <v-row>
+                        <v-col cols="8">
+                          <v-date-picker
+                            v-model="dateRange"
+                            range
+                            no-title
+                            multiple
+                            color="#ff5f2c"
+                            @update:model-value="handleDateSelect"
+                            locale="ko-KR"
+                            class="elevation-0"
+                          >
+                          </v-date-picker>
+                        </v-col>
+                      </v-row>
+                    </v-card-text>
+                  </v-card>
                 </v-menu>
               </v-col>
               <v-col
-                cols="12"
-                sm="6"
-                md="4"
-                class="d-flex justify-end align-center"
+                cols="6"
+                class="py-0 d-flex align-center"
+                style="padding-bottom: 16px !important"
               >
-                <v-btn color="#ff5f2c" @click="handleSearch" dark>검색</v-btn>
+                <v-btn
+                  variant="outlined"
+                  class="mx-2"
+                  @click="setDatePreset(7)"
+                  height="48"
+                  >1주일</v-btn
+                >
+                <v-btn
+                  variant="outlined"
+                  class="mx-2"
+                  @click="setDatePreset(30)"
+                  height="48"
+                  >1개월</v-btn
+                >
+                <v-btn
+                  variant="outlined"
+                  class="mx-2"
+                  @click="setDatePreset(90)"
+                  height="48"
+                  >3개월</v-btn
+                >
+              </v-col>
+              <v-col
+                cols="2"
+                class="d-flex justify-end align-center py-0"
+                style="padding-bottom: 16px !important"
+              >
+                <v-btn
+                  color="#ff5f2c"
+                  @click="handleSearch"
+                  dark
+                  height="48"
+                  min-width="80"
+                >
+                  검색
+                </v-btn>
               </v-col>
             </v-row>
           </v-card-text>
@@ -69,8 +125,8 @@
           @update:page="onPageChange"
           @update:items-per-page="onItemsPerPageChange"
           items-per-page-text="페이지 당 아이템 수"
-          no-data-text="사용자 정보를 찾을 수 없습니다."
-          loading-text="사용자 목록을 불러오는 중..."
+          no-data-text="검색 결과가 없습니다."
+          loading-text="사용자 정보를 가져오는 중..."
           :loading="loading"
           class="elevation-1"
         >
@@ -90,13 +146,13 @@
             </v-chip>
           </template>
           <template v-slot:[`item.createdAt`]="{ item }">
-            {{ formatDate(item.createdAt) }}
+            {{ formatStringDate(item.createdAt) }}
           </template>
           <template v-slot:[`item.updatedAt`]="{ item }">
-            {{ formatDate(item.updatedAt) }}
+            {{ formatStringDate(item.updatedAt) }}
           </template>
           <template v-slot:[`item.deletedAt`]="{ item }">
-            {{ item.deletedAt ? formatDate(item.deletedAt) : "-" }}
+            {{ item.deletedAt ? formatStringDate(item.deletedAt) : "-" }}
           </template>
           <template v-slot:[`item.actions`]="{ item }">
             <v-btn small color="#ff5f2c" dark @click="showUserDetail(item.id)">
@@ -149,7 +205,7 @@ import {
   defineAsyncComponent,
 } from "vue";
 import { EndUser } from "@/types/user/user";
-import { formatDate } from "@/utils/date-formatter";
+import { formatDate, formatStringDate } from "@/utils/date-formatter";
 import { PageResponse } from "@/types/common/response";
 import { request } from "@/utils/request-client";
 import { AxiosRequestConfig } from "axios";
@@ -162,6 +218,7 @@ import { useSnackbar } from "@/hook/snackbar";
 
 export default defineComponent({
   name: "UserManageView",
+  methods: { formatStringDate },
   components: {
     UserDetailView: defineAsyncComponent(
       () => import("@/components/user/UserDetailView.vue")
@@ -169,9 +226,13 @@ export default defineComponent({
   },
   setup() {
     const showList = ref(true);
+    const users = ref<EndUser[]>([]);
     const selectedUserId = ref<number | null>(null);
-    const searchQuery = ref("");
-    const dateRange = ref<string[]>([]);
+    const searchFields = ref({
+      nickname: "",
+      email: "",
+    });
+    const dateRange = ref<Date[]>([]);
     const dateMenu = ref(false);
     const loading = ref(false);
     const currentPage = ref(1);
@@ -204,16 +265,19 @@ export default defineComponent({
       { title: "관리", key: "actions", sortable: false },
     ];
 
-    const users = ref<EndUser[]>([]);
-
     const fetchUsers = async (options?: AxiosRequestConfig) => {
       loading.value = true;
       const params = {
         page: currentPage.value,
         size: itemsPerPage.value,
-        search: searchQuery.value,
-        startDate: dateRange.value[0],
-        endDate: dateRange.value[1],
+        nickname: searchFields.value.nickname,
+        email: searchFields.value.email,
+        startDate: dateRange.value[0]
+          ? dateRange.value[0].toISOString().split("T")[0]
+          : undefined,
+        endDate: dateRange.value[1]
+          ? dateRange.value[1].toISOString().split("T")[0]
+          : undefined,
         ...options?.params,
       };
 
@@ -225,9 +289,7 @@ export default defineComponent({
         users.value = response.data.content;
         totalItems.value = response.data.totalElements;
       } catch (e: any) {
-        showMessage(
-          e.response?.data?.message || "사용자 정보를 불러오는데 실패했습니다."
-        );
+        showMessage("사용자 정보를 불러오지 못했어요.");
       } finally {
         loading.value = false;
       }
@@ -272,11 +334,19 @@ export default defineComponent({
       return "";
     });
 
-    const handleDateSelect = (dates: string[]) => {
+    const handleDateSelect = (dates: Date[]) => {
       dateRange.value = dates;
       if (dates.length === 2) {
         dateMenu.value = false;
       }
+    };
+
+    const setDatePreset = (days: number) => {
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+
+      dateRange.value = [startDate, endDate];
     };
 
     return {
@@ -288,11 +358,11 @@ export default defineComponent({
       position,
       hideMessage,
       showMessage,
+      searchFields,
       selectedUserId,
       currentPage,
       itemsPerPage,
       totalItems,
-      searchQuery,
       dateMenu,
       dateRange,
       dateRangeText,
@@ -301,6 +371,7 @@ export default defineComponent({
       users,
       handleSearch,
       handleDateSelect,
+      setDatePreset,
       showUserDetail,
       backToList,
       onPageChange,
@@ -339,7 +410,6 @@ export default defineComponent({
   font-weight: 600;
 }
 
-/* 트랜지션 효과 */
 .v-slide-x-transition-enter-active,
 .v-slide-x-transition-leave-active,
 .v-slide-x-reverse-transition-enter-active,

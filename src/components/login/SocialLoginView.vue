@@ -8,14 +8,25 @@
     <h1 class="text-center mb-6" style="font-weight: bold; font-size: 24px">
       LOCAT Admin Console
     </h1>
-    <div class="text-center mb-4">
+    <div class="text-center mb-4 d-flex flex-column align-center">
       <img
-        src="https://k.kakaocdn.net/14/dn/btroDszwNrM/I6efHub1SN5KCJqLm1Ovx1/o.jpg"
-        width="222"
+        src="/images/kakao_login_medium_narrow.png"
+        width="183"
+        height="45"
         alt="카카오 로그인 버튼"
         @click="loginWithKakao"
-        style="cursor: pointer"
+        style="cursor: pointer; margin-bottom: 16px"
       />
+      <div
+        id="appleid-signin"
+        data-mode="center-align"
+        data-type="sign-up"
+        data-color="black"
+        data-border="false"
+        data-border-radius="15"
+        data-width="183"
+        data-height="45"
+      ></div>
     </div>
     <v-alert type="error" v-if="errorMessage" dense text="">
       {{ errorMessage }}
@@ -23,28 +34,22 @@
   </v-card>
 </template>
 
-<script lang="ts">
+<script>
 import { defineComponent, onMounted, ref } from "vue";
-import { useAuth } from "@/store/auth";
 import { getProperty } from "@/utils/environment";
-import { useRoute } from "vue-router";
-import { request } from "@/utils/request-client";
-import { TokenDto } from "@/types/admin/login-response";
 
 const KAKAO_REDIRECT_URI = getProperty("KAKAO_REDIRECT_URI");
+const APPLE_REDIRECT_URI = getProperty("APPLE_REDIRECT_URI");
+const APPLE_CLIENT_ID = getProperty("APPLE_CLIENT_ID");
 
 export default defineComponent({
   name: "SocialLoginView",
   emits: ["update:view"],
   setup() {
-    const auth = useAuth();
-    const route = useRoute();
     const errorMessage = ref("");
 
     onMounted(() => {
-      if (window.location.href.startsWith(KAKAO_REDIRECT_URI)) {
-        handleOAuthRedirect();
-      }
+      initializeAppleSignIn();
     });
 
     const loginWithKakao = async () => {
@@ -58,39 +63,29 @@ export default defineComponent({
       }
     };
 
-    const loginWithApple = async () => {
-      try {
-        alert("준비 중입니다.");
-      } catch (error) {
-        errorMessage.value = "Apple 로그인 중 오류가 발생했습니다.";
-      }
+    const initializeAppleSignIn = () => {
+      const script = document.createElement("script");
+      script.src =
+        "https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/ko_KR/appleid.auth.js";
+      script.async = true;
+      script.onload = () => {
+        window.AppleID?.auth.init({
+          clientId: APPLE_CLIENT_ID,
+          redirectURI: APPLE_REDIRECT_URI,
+          responseMode: "form_post",
+          nonce: generateRandomState(),
+          usePopup: false,
+        });
+      };
+      document.head.appendChild(script);
     };
 
-    const handleOAuthRedirect = () => {
-      const oAuthId = route.query.oAuthId as string;
-      if (oAuthId) {
-        request<TokenDto>("/v1/users", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          data: JSON.stringify({
-            oAuthId: oAuthId,
-            nickname: "LOCAT" + Math.floor(Math.random() * 10000),
-            isTermsOfServiceAgreed: true,
-            isPrivacyPolicyAgreed: true,
-            isLocationPolicyAgreed: true,
-            isMarketingPolicyAgreed: false,
-          }),
-        }).then((response) => {
-          alert(response);
-        });
-      }
+    const generateRandomState = () => {
+      return Math.random().toString(36).substring(2, 15);
     };
 
     return {
       loginWithKakao,
-      loginWithApple,
       errorMessage,
     };
   },
