@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
+    "target": "ES2020",
+    "module": "ES2020",
     "strict": true,
     "jsx": "preserve",
     "moduleResolution": "node",
@@ -13,7 +13,7 @@
     "sourceMap": true,
     "baseUrl": ".",
     "types": [
-      "webpack-env"
+      "webpack-env", "vite/client"
     ],
     "paths": {
       "@/*": [
@@ -21,7 +21,7 @@
       ]
     },
     "lib": [
-      "esnext",
+      "ES2020",
       "dom",
       "dom.iterable",
       "scripthost"
